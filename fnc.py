@@ -1,11 +1,9 @@
 from sklearn.model_selection import train_test_split
-from tensorflow.keras import optimizers  # type: ignore
+from tensorflow.keras import optimizers
 
-import numpy as np
 import pandas as pd
 import deep_learning
 import funciones_datos
-import preprocesado
 from mi_hilo import MiHilo
 
 
@@ -85,6 +83,7 @@ def ejecuta_experimentos_transfer_learning(
     neuronas,
     dropouts,
     activaciones,
+    capas,
     pred_entrenamiento_or,
     pred_test_or,
     target_entrenamiento,
@@ -191,6 +190,7 @@ def hilo_tl(
     dropout,
     activacion,
     capa,
+    max_epoch_tl,
 ):
     df_tl_or = pd.DataFrame()
     df_tl_or, config, modelo = deep_learning.transfer_learning(
@@ -245,7 +245,18 @@ def seleccion_mejor_configuracion(df_mini_pp):
 
 
 def ejecuta_preprocesado_red_elegida(
-    configuraciones, et_filtradas, imagenes_preprocesadas, nombre_cnn, n_neuronas, n_dropout, n_activacion, n_capas
+    cnn_preentrenadas,
+    im_filtradas,
+    configuraciones,
+    et_filtradas,
+    imagenes_preprocesadas,
+    nombre_cnn,
+    n_neuronas,
+    n_dropout,
+    n_activacion,
+    n_capas,
+    max_epoch_tl,
+    seed,
 ):
     df_prepro = pd.DataFrame()
 
@@ -283,7 +294,7 @@ def ejecuta_preprocesado_red_elegida(
     return df_prepro, configuraciones
 
 
-def preprocesar(et_filtradas, imagenes_preprocesadas, nombre_cnn):
+def preprocesar(et_filtradas, imagenes_preprocesadas, nombre_cnn, seed):
     im_red = imagenes_preprocesadas["im_preprocesadas_" + nombre_cnn]
     pred_entrenamiento, pred_test, target_entrenamiento, target_test = train_test_split(
         imagenes_preprocesadas["im_preprocesadas_" + nombre_cnn],
@@ -354,7 +365,7 @@ def crearcnnft(im_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
 
 
 def ejecuta_fine_tunning_mejor_cnn(
-    im_filtradas, et_filtradas, imagenes_preprocesadas, nombre_cnn, configuraciones, nombre_top, clave_cnn
+    im_filtradas, et_filtradas, imagenes_preprocesadas, nombre_cnn, configuraciones, nombre_top, clave_cnn, max_epoch_ft, seed
 ):
     print("\n\n\n==================== FINE TUNNING ====================\n")
 
@@ -363,7 +374,7 @@ def ejecuta_fine_tunning_mejor_cnn(
 
     # División de los datos en conjuntos de entrenamiento y prueba según la CNN seleccionada
     _, pred_entrenamiento, pred_test, target_entrenamiento, target_test = preprocesar(
-        et_filtradas, imagenes_preprocesadas, nombre_cnn
+        et_filtradas, imagenes_preprocesadas, nombre_cnn, seed
     )
 
     # Entrenamiento y evaluación del modelo completo para Fine-Tuning
