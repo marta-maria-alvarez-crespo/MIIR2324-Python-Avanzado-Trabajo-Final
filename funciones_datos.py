@@ -66,7 +66,7 @@ def data_augmentation(input_shape):
     return model
 
 
-def cnn_predict(img, tipo, modeloCNN):
+def cnn_predict(img, tipo, modeloCNN, nombreCNN):
     """Realiza predicciones utilizando un modelo de red neuronal convolucional pre-entrenado
 
     Args:
@@ -77,7 +77,7 @@ def cnn_predict(img, tipo, modeloCNN):
     Returns:
         numpy.ndarray: Predicciones del modelo.
     """
-    file_path = f"{tipo + modeloCNN.name}.npy"
+    file_path = f"{tipo + nombreCNN}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
     else:

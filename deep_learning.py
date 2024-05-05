@@ -102,31 +102,6 @@ def entrenar_modelo(max_epochs, modelo, pred_entrenamiento, target_entrenamiento
         )
     
     return resumen
-
-
-def crear_configuraciones(entrada, neuronas, dropouts, activaciones, capa_salida, capas):
-    """Crea diferentes configuraciones de clasificadores basadas en los parámetros proporcionados
-
-    Args:
-        entrada (tuple): Dimensiones de la entrada de datos
-        neuronas (list): Lista de números de neuronas para las capas densas
-        dropouts (list): Lista de tasas de dropout para reducir el sobreajuste del modelo
-        activaciones (list): Lista de funciones de activación para las capas densas
-        capa_salida (int): Número de clases en la tarea de clasificación
-        capas (int): Número de capas ocultas de la red
-
-    Returns:
-        dict: Diccionario que contiene las diferentes configuraciones de clasificadores. Las claves son cadenas que representan las configuraciones, 
-              y los valores son modelos de red neuronal completamente definidos
-    """
-    dict = {}
-    for neurona in neuronas:
-        for dropout in dropouts:
-            for activacion in activaciones:
-                for capa in capas:
-                    dict[f"TOP_{str(neurona)}_{str(dropout)}_{str(activacion)}_{str(capa)}"] = crear_clasificador(entrada, neurona, dropout, activacion, capa_salida, capa)
-                
-    return dict
     
     
 def metricas_entrenamiento(history, nombre, config, preprocesado):
@@ -231,9 +206,9 @@ def evaluar_modelo(max_epoch, modelo, pred_entrenamiento, pred_test, target_entr
         tuple: Un par de arrays numpy que representan las predicciones del modelo y las etiquetas de prueba
     """
     resumen = entrenar_modelo(max_epoch, modelo, pred_entrenamiento, target_entrenamiento)
-    metricas_entrenamiento(resumen, nombre_dicc_cnn, config, tipo_ejecucion)
+    # metricas_entrenamiento(resumen, nombre_dicc_cnn, config, tipo_ejecucion)
     resultados_predict= modelo.predict(pred_test)
-    metricas_evaluacion(resultados_predict, target_test, nombre_dicc_cnn, config, tipo_ejecucion)
+    # metricas_evaluacion(resultados_predict, target_test, nombre_dicc_cnn, config, tipo_ejecucion)
     
     return resultados_predict, target_test
   
@@ -277,7 +252,7 @@ def crear_dataframe(pred, target_test, nombre):
     return df
 
 
-def transfer_learning(neuronas, dropouts, activaciones, capas, max_epoch_tl, im_filtradas, et_filtradas, pred_entrenamiento, pred_test, target_entrenamiento, target_test, df, nombre_dicc_cnn, cnn, tasa_aprendizaje, preprocesado):
+def transfer_learning(neurona, dropout, activacion, capa, max_epoch_tl, et_filtradas, pred_entrenamiento, pred_test, target_entrenamiento, target_test, df, nombre_dicc_cnn, tasa_aprendizaje, preprocesado):
     """ Realiza transfer learning utilizando modelos de redes neuronales preentrenadas según los parámetros preestablecidos
 
     Args:
@@ -306,26 +281,23 @@ def transfer_learning(neuronas, dropouts, activaciones, capas, max_epoch_tl, im_
     - configuraciones (dict): Diccionario que contiene las configuraciones de modelos probadas
     - config (str): Configuración actual del modelo
     """
-    # Creación de la CNN elegida
-    ccn_elegida = cnn(im_filtradas.shape[1:])
-    
-    # Predicción de los datos de entrenamiento y prueba con la CNN
-    pred_entrenamiento_cnn = funciones_datos.cnn_predict(pred_entrenamiento, "entrenamiento", ccn_elegida)
-    pred_test_cnn = funciones_datos.cnn_predict(pred_test, "validacion", ccn_elegida)
     
     # Creación de las configuraciones para experimentar
-    configuraciones = crear_configuraciones(pred_entrenamiento_cnn.shape[1:], neuronas, dropouts, activaciones, et_filtradas[0].shape[0], capas)
+    modelo = crear_clasificador(pred_entrenamiento.shape[1:], neurona, dropout, activacion, et_filtradas[0].shape[0], capa)
+    config= f"TOP_{str(neurona)}_{str(dropout)}_{str(activacion)}_{str(capa)}"
+    modelo.summary()
+    print(f"\n\n\n============ Se está probando {nombre_dicc_cnn} con la config {config} ==============\n") 
+        # Compilar el modelo
+    modelo.compile(optimizer= optimizers.Adam(learning_rate=tasa_aprendizaje), loss= "categorical_crossentropy", metrics=['accuracy'])
     
-    # Experimentación con diferentes configuraciones
-    for config, modelo in configuraciones.items():
-        print(f"\n\n\n============ Se está probando {nombre_dicc_cnn} con la config {config} ==============\n") 
-            # Compilar el modelo
-        modelo.compile(optimizer= optimizers.Adam(learning_rate=tasa_aprendizaje), loss= "categorical_crossentropy", metrics=['accuracy'])
-        target, predict_II = evaluar_modelo(max_epoch_tl, modelo, pred_entrenamiento_cnn, pred_test_cnn, target_entrenamiento, target_test, nombre_dicc_cnn, config, preprocesado)
-        # Concatenación de resultados al DataFrame
-        df= pd.concat([df, crear_dataframe(predict_II, target, ccn_elegida.name + " | " + config)], join= "outer", axis= 0, ignore_index= True)
+    target, predict_II = evaluar_modelo(max_epoch_tl, modelo, pred_entrenamiento, pred_test, target_entrenamiento, target_test, nombre_dicc_cnn, config, preprocesado)
+    # Concatenación de resultados al DataFrame
+    minidf= crear_dataframe(predict_II, target, nombre_dicc_cnn + " | " + config)
+    
+    if not(len(df)): df= minidf
+    else: df= pd.concat([df, minidf], axis= 0, ignore_index= True)
         
-    return df,ccn_elegida,configuraciones,config
+    return df, config, modelo
 
 
 # Funciones relacionadas con el proceso de Fine-Tunning
