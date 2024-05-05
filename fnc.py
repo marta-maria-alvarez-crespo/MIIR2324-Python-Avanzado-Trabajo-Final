@@ -84,6 +84,7 @@ def ejecuta_experimentos_transfer_learning(
     dropouts,
     activaciones,
     capas,
+    max_epoch_tl,
     pred_entrenamiento_or,
     pred_test_or,
     target_entrenamiento,
@@ -145,13 +146,11 @@ def ejecuta_experimentos_transfer_learning(
                                 dropout,
                                 activacion,
                                 capa,
+                                max_epoch_tl,
                             ),
                         )
                         hilo.start()
                         hilos.append(hilo)
-
-        for hilo in hilos:
-            hilo.join()
 
         for hilo in hilos:
             mini_df_tl_or, mini_df_tl_pp, configuracion = hilo.result

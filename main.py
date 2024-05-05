@@ -99,6 +99,7 @@ if __name__ == "__main__":
         dropouts=dropouts,
         activaciones=activaciones,
         capas=capas,
+        max_epoch_tl=max_epoch_tl,
         pred_entrenamiento_or=pred_entrenamiento_or,
         pred_test_or=pred_test_or,
         target_entrenamiento=target_entrenamiento,
