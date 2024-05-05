@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Archivos generados por el script
+*.png
+*.npy
+
 # C extensions
 *.so
 
