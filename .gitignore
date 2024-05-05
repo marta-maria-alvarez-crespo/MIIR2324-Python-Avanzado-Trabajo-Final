@@ -6,6 +6,7 @@ __pycache__/
 # Archivos generados por el script
 *.png
 *.npy
+*.h5
 
 # C extensions
 *.so
