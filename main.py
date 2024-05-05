@@ -139,6 +139,10 @@ def division_preparacion_datos_entrada(im_filtradas, imagenes_preprocesadas, see
 def ejecuta_experimentos_transfer_learning(
     im_filtradas,
     et_filtradas,
+    cnn_preentrenadas,
+    neuronas,
+    dropouts,
+    activaciones,
     pred_entrenamiento_or,
     pred_test_or,
     target_entrenamiento,
@@ -471,6 +475,10 @@ if __name__ == "__main__":
     configuraciones, df_mini_or, df_mini_pp = ejecuta_experimentos_transfer_learning(
         im_filtradas,
         et_filtradas,
+        cnn_preentrenadas,
+        neuronas,
+        dropouts,
+        activaciones,
         pred_entrenamiento_or,
         pred_test_or,
         target_entrenamiento,
