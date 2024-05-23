@@ -5,16 +5,11 @@
 import os
 
 def crear_carpeta(nombre_carpeta: str = "nombre_carpeta"):
-    """
-    Crea una nueva carpeta en el sistema de archivos si no existe.
+    """Crea una carpeta con el nombre especificado.
 
-    Args:
-        nombre_carpeta (str, opcional): Nombre de la carpeta a crear. 
-                                         El valor por defecto es "nombre_carpeta".
-
-    Returns:
-        None
-    """
+    :param nombre_carpeta: El nombre de la carpeta a crear, por defecto es "nombre_carpeta"
+    :type nombre_carpeta: str, opcional
+    """    
     if not os.path.exists(nombre_carpeta):
         os.makedirs(nombre_carpeta)
     
