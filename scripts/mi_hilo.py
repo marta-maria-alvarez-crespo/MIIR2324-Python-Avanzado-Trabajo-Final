@@ -4,8 +4,10 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 
+
 def f(X, Y):
     return pd.DataFrame({"a": [X, X, X], "b": [Y, Y, Y]}), "hola"
+
 
 class MiHilo(Thread):
     def __init__(self, target, args):
@@ -17,6 +19,7 @@ class MiHilo(Thread):
     def get_result(self):
         return self.result
 
+
 class MiProceso(Process):
     def __init__(self, target, args, queue):
         super().__init__(target=target, args=args)
@@ -25,6 +28,7 @@ class MiProceso(Process):
     def run(self):
         result = self._target(*self._args)
         self.queue.put(result)
+
 
 def m():
     hilos = []
@@ -39,11 +43,12 @@ def m():
     df = pd.DataFrame()
     for hilo in hilos:
         result, hola = hilo.get_result()
-        df = pd.concat([df, pd.DataFrame(result)], join= "outer", axis= 0, ignore_index= True)
+        df = pd.concat([df, pd.DataFrame(result)], join="outer", axis=0, ignore_index=True)
     print(df)
 
+
 def m2():
-    neuronas = [1,2,3,4]
+    neuronas = [1, 2, 3, 4]
     capas = [5, 6, 7, 8]
     futures = []
     with ThreadPoolExecutor(max_workers=4) as pool:
@@ -54,19 +59,21 @@ def m2():
 
     df = pd.DataFrame()
     for result in results:
-        df = pd.concat([df, pd.DataFrame(result[0])], join= "outer", axis= 0, ignore_index= True)
+        df = pd.concat([df, pd.DataFrame(result[0])], join="outer", axis=0, ignore_index=True)
         print(result[1])
     print(df)
 
+
 def m3():
-    neuronas = [1,2,3,4]
+    neuronas = [1, 2, 3, 4]
     with ThreadPoolExecutor(max_workers=4) as pool:
-        results = list(pool.map(f, neuronas, [i+1 for i in neuronas]))
+        results = list(pool.map(f, neuronas, [i + 1 for i in neuronas]))
 
     df = pd.DataFrame()
     for result in results:
-        df = pd.concat([df, pd.DataFrame(result)], join= "outer", axis= 0, ignore_index= True)
+        df = pd.concat([df, pd.DataFrame(result)], join="outer", axis=0, ignore_index=True)
     print(df)
+
 
 if __name__ == "__main__":
     m2()

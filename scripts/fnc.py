@@ -1,3 +1,7 @@
+# Autora:  Marta María Álvarez Crespo
+# Descripción: Funciones necesarias para la ejecución de los experimentos de Transfer Learning y Fine-Tuning.
+# Última modificación: 24 / 05 / 2024
+
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import optimizers
 import pandas as pd
@@ -5,14 +9,14 @@ import os
 import deep_learning
 import funciones_datos
 from mi_hilo import MiHilo
-
 from preprocesado import imagenes_preprocesadas
 import json
 
-configuracion = json.load(open("./configuracion.json", "r", encoding= 'UTF-8'))
+configuracion = json.load(open("./configuracion.json", "r", encoding="UTF-8"))
 
 #  Creación de un diccionario con las CNN pre-entrenadas que se deseen cargar
 cnn_preentrenadas = {"mn": deep_learning.cargar_mn, "vgg": deep_learning.cargar_vgg}
+
 
 def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
     """Divide los datos de entrada en conjuntos de entrenamiento y prueba y aplica data augmentation a las imágenes de entrenamiento.
@@ -23,14 +27,11 @@ def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
     :type et_filtradas: numpy.ndarray
     :return: Tupla que contiene los conjuntos de entrenamiento y prueba de las imágenes filtradas y las etiquetas filtradas.
     :rtype: tuple
-    """    
+    """
     # División de datos de entrenamiento y prueba
-    (
-        pred_entrenamiento_or,
-        pred_test_or,
-        target_entrenamiento,
-        target_test
-    ) = train_test_split(im_filtradas, et_filtradas, test_size=0.2, shuffle=True, random_state= configuracion["parametros_top"]["seed"])
+    (pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test) = train_test_split(
+        im_filtradas, et_filtradas, test_size=0.2, shuffle=True, random_state=configuracion["parametros_top"]["seed"]
+    )
 
     # Data Augmentation de las imágenes
     da = funciones_datos.data_augmentation(im_filtradas.shape[1:])
@@ -70,7 +71,10 @@ def ejecuta_experimentos_transfer_learning(
     """
 
     dicc_base = {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}}
-    configuraciones = {"mn": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}}, "vgg": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}}}
+    configuraciones = {
+        "mn": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}},
+        "vgg": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}},
+    }
 
     hilos = []
 
@@ -79,16 +83,12 @@ def ejecuta_experimentos_transfer_learning(
     for n_cnn, pruebas in configuraciones.items():
         cnn = cnn_preentrenadas[n_cnn](pred_entrenamiento_or.shape[1:])
         for prueba in pruebas.keys():
-            prueba_mas_cnn = prueba + '_' + n_cnn
+            prueba_mas_cnn = prueba + "_" + n_cnn
             predictores_train = imagenes_preprocesadas[prueba_mas_cnn](pred_entrenamiento_or, prueba_mas_cnn)
-            predictores_train = funciones_datos.cnn_predict(
-                predictores_train, "entrenamiento", cnn, n_cnn
-            )
+            predictores_train = funciones_datos.cnn_predict(predictores_train, "entrenamiento", cnn, n_cnn)
             predictores_test = imagenes_preprocesadas[prueba_mas_cnn](pred_test_or, prueba_mas_cnn)
-            predictores_test = funciones_datos.cnn_predict(
-                predictores_test, "validacion", cnn, n_cnn
-            )
-            
+            predictores_test = funciones_datos.cnn_predict(predictores_test, "validacion", cnn, n_cnn)
+
             for neurona in configuracion["parametros_top"]["neuronas"]:
                 for dropout in configuracion["parametros_top"]["dropouts"]:
                     for activacion in configuracion["parametros_top"]["activaciones"]:
@@ -108,7 +108,7 @@ def ejecuta_experimentos_transfer_learning(
                                     activacion,
                                     capa,
                                     configuracion["parametros_top"]["transfer_learning"]["max_epoch"],
-                                    prueba
+                                    prueba,
                                 ),
                             )
                             hilo.start()
@@ -116,16 +116,18 @@ def ejecuta_experimentos_transfer_learning(
 
     for hilo in hilos:
         hilo.join()
-    
+
     # Creación de un dataframe con los resultados obtenidos en Transfer Learning
     df_tl_or = pd.DataFrame()
     for hilo in hilos:
-        mini_df_tl, nombre_dicc_cnn, prueba, config, modelo  = hilo.get_result()
+        mini_df_tl, nombre_dicc_cnn, prueba, config, modelo = hilo.get_result()
         configuraciones[nombre_dicc_cnn][prueba][config] = modelo
         # Si el dataframe está vacío, se asigna el mini_df_tl, si no, se concatenan ambos dataframes
-        if not len(df_tl_or): df_tl_or = mini_df_tl
-        else: df_tl_or = pd.concat([df_tl_or, mini_df_tl], join= "outer", axis=0, ignore_index=True)
-            
+        if not len(df_tl_or):
+            df_tl_or = mini_df_tl
+        else:
+            df_tl_or = pd.concat([df_tl_or, mini_df_tl], join="outer", axis=0, ignore_index=True)
+
     # Guardado de los datos originales en Excel
     df_mini = df_tl_or.set_index("Modelo de entrenamiento utilizado")
 
@@ -143,45 +145,6 @@ def ejecuta_experimentos_transfer_learning(
     return configuraciones, df_or, df_norm, df_preprocesado
 
 
-# def hilo_tl(
-#     et_filtradas: list,
-#     target_entrenamiento: list,
-#     target_test: list,
-#     configuraciones: dict,
-#     nombre_dicc_cnn: str,
-#     pred_entrenamiento: list,
-#     pred_test: list,
-#     neurona: int,
-#     dropout: float,
-#     activacion: str,
-#     capa: int,
-#     max_epoch_tl: int,
-#     prueba: str
-# ):
-#     # Creación de un dataframe vacío
-#     df_tl = pd.DataFrame()
-
-#     # Realiza el proceso de Transfer Learning
-#     df_tl, config, modelo = deep_learning.transfer_learning(
-#         neurona=neurona,
-#         dropout=dropout,
-#         activacion=activacion,
-#         capa=capa,
-#         max_epoch_tl=max_epoch_tl,
-#         et_filtradas=et_filtradas,
-#         pred_entrenamiento=pred_entrenamiento,
-#         pred_test=pred_test,
-#         target_entrenamiento=target_entrenamiento,
-#         target_test=target_test,
-#         df=df_tl,
-#         nombre_dicc_cnn=nombre_dicc_cnn,
-#         tasa_aprendizaje=configuracion["parametros_top"]["transfer_learning"]["learning_rate"],
-#         preprocesado=prueba,
-#     )
-#     configuraciones[nombre_dicc_cnn][prueba][config] = modelo
-
-#     return df_tl, configuraciones
-
 def hilo_tl(
     et_filtradas: list,
     target_entrenamiento: list,
@@ -194,7 +157,7 @@ def hilo_tl(
     activacion: str,
     capa: int,
     max_epoch_tl: int,
-    prueba: str
+    prueba: str,
 ):
     # Creación de un dataframe vacío
     df_tl = pd.DataFrame()
@@ -217,7 +180,8 @@ def hilo_tl(
         preprocesado=prueba,
     )
 
-    return df_tl, nombre_dicc_cnn, prueba, config, modelo 
+    return df_tl, nombre_dicc_cnn, prueba, config, modelo
+
 
 def seleccion_mejor_configuracion(df_mini_pp):
     """Selecciona la mejor configuración obtenida en Transfer Learning.
@@ -226,7 +190,7 @@ def seleccion_mejor_configuracion(df_mini_pp):
     :type df_mini_pp: pandas.DataFrame
     :return: El nombre de la CNN, el número de neuronas, el valor de dropout, la función de activación y el número de capas de la mejor configuración.
     :rtype: tuple
-    """    
+    """
     # Selección de la mejor configuración obtenida en Transfer Learning
     nombre_cnn, nombre_top = df_mini_pp["Accuracy"].idxmax().rsplit(" | ")
     _, n_neuronas, n_dropout, n_activacion, n_capas = nombre_top.rsplit("_")
@@ -275,7 +239,7 @@ def ejecuta_preprocesado_red_elegida(
     :type n_capas: int
     :return: Un dataframe con los resultados del preprocesado y las configuraciones actualizadas.
     :rtype: tuple
-    """    
+    """
 
     # Creación de un dataframe vacío
     df_prepro = pd.DataFrame()
@@ -316,6 +280,7 @@ def ejecuta_preprocesado_red_elegida(
     configuraciones[nombre_cnn]["prep"][config] = modelo
     return df_prepro, configuraciones
 
+
 def selecciona_mejor_cnn(df_mini_or, df_mini_pp, df_prepro):
     """Selecciona la mejor CNN basada en los resultados de precisión comparando los resultados de precisión de tres dataframes: df_mini_or, df_mini_pp y df_prepro.
     Luego, selecciona la CNN con la mayor precisión y devuelve su nombre, el nombre del modelo top y una clave identificadora.
@@ -328,8 +293,8 @@ def selecciona_mejor_cnn(df_mini_or, df_mini_pp, df_prepro):
     :type df_prepro: pandas.DataFrame
     :return: El nombre de la CNN seleccionada, el nombre del modelo top y una clave identificadora.
     :rtype: tuple
-    """    
-    
+    """
+
     # Encontrar el índice del valor máximo en el dataframe df_mini_or
     indice_or = df_mini_or["Accuracy"].idxmax()
     nombre_cnn_mini_or, nombre_top_mini_or = indice_or.rsplit(" | ")
@@ -377,7 +342,7 @@ def crear_cnn_ft(im_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cn
     :type clave_cnn: str
     :return: El modelo completo para Fine-Tuning.
     :rtype: tensorflow.keras.Model
-    """    
+    """
     cnn_funcion = cnn_preentrenadas[nombre_cnn](im_filtradas.shape[1:])
     # cnn_funcion.trainable = False # Establecimiento de la red como no entrenable para acoplar el clasificador seleccionado
 
@@ -394,11 +359,9 @@ def crear_cnn_ft(im_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cn
     return modelo_completo
 
 
-def ejecuta_fine_tunning_mejor_cnn(
-    im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn
-):
+def ejecuta_fine_tunning_mejor_cnn(im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn):
     """Ejecuta el proceso de Fine-Tuning de una red neuronal convolucional (CNN) tomando como entrada imágenes filtradas y etiquetas filtradas,
-    el nombre de la CNN a utilizar, las configuraciones necesarias, el nombre del modelo top, y la clave de la CNN. 
+    el nombre de la CNN a utilizar, las configuraciones necesarias, el nombre del modelo top, y la clave de la CNN.
 
     :param im_filtradas: Imágenes filtradas para el entrenamiento y prueba.
     :type im_filtradas: list
@@ -412,17 +375,19 @@ def ejecuta_fine_tunning_mejor_cnn(
     :type nombre_top: str
     :param clave_cnn: Clave de la CNN.
     :type clave_cnn: str
-    """    
-    
-    # Creación del modelo completo para Fine-Tuning con la mejor configuración obtenida 
+    """
+
+    # Creación del modelo completo para Fine-Tuning con la mejor configuración obtenida
     modelo_completo = crear_cnn_ft(im_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
 
     # Creación de la clave para acceder a las imágenes preprocesadas
-    clave = clave_cnn + '_' + nombre_cnn
+    clave = clave_cnn + "_" + nombre_cnn
 
     # Preprocesado de las imágenes para Fine-Tuning y división de los datos de entrenamiento y prueba
     imagenes = imagenes_preprocesadas[clave](im_filtradas, "temporal")
-    pred_entrenamiento, pred_test, target_entrenamiento, target_test = train_test_split(imagenes, et_filtradas, test_size=0.2, shuffle=True, random_state= configuracion["parametros_top"]["seed"])
+    pred_entrenamiento, pred_test, target_entrenamiento, target_test = train_test_split(
+        imagenes, et_filtradas, test_size=0.2, shuffle=True, random_state=configuracion["parametros_top"]["seed"]
+    )
 
     # Entrenamiento y evaluación del modelo completo para Fine-Tuning
     target, predict_II = deep_learning.evaluar_modelo(
