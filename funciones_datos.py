@@ -1,29 +1,31 @@
 
-# Autores:  Marta María Álvarez Crespo y Juan Manuel Ramos Pérez
+# Autores:  Marta María Álvarez Crespo
 # Descripción: Carga y tratamiento de los datos seleccionados para una red neuronal
-# Última modificación: 20 / 03 / 2024 
+# Última modificación: 20 / 05 / 2024 
 
 import numpy as np
 import h5py
 from tensorflow import keras
 from tensorflow.keras import layers
+from sklearn.preprocessing import OneHotEncoder
 import os
 
-def cargar_dataset():
-    """Carga el conjunto de datos Galaxy10 y filtra las clases específicas de interés
+import json
+configuracion = json.load(open("./configuracion.json", "r", encoding= 'UTF-8'))
 
-    Returns:
-        tuple: Una tupla que contiene las imágenes filtradas y las etiquetas correspondientes
+def cargar_dataset():
     """
-    with h5py.File('dataset/Galaxy10_DECals.h5', 'r') as F:
+    Carga y filtra el dataset según las clases elegidas.
+
+    :return: Una tupla con las imágenes y las etiquetas filtradas.
+    :rtype: tuple
+    """    
+    with h5py.File(configuracion["cargar_dataset"]["dataset"], 'r') as F:
         imagenes = np.array(F['images'])
         etiquetas = np.array(F['ans'])
-        
-    # unique, counts = np.unique(etiquetas, return_counts=True)
-    # print(dict(zip(unique, counts)))
     
-    # Clases que vamos a utilizar (1, 6 y 9)
-    clases_utilizadas = [1, 6, 9]
+    # Clases que se van a utilizar
+    clases_utilizadas = configuracion["cargar_dataset"]["clases"]
 
     # Índices de las muestras a las que pertenecen estas clases
     indices_clases_utilizadas = np.isin(etiquetas, clases_utilizadas)
@@ -31,10 +33,14 @@ def cargar_dataset():
     # Selección de las filas
     imagenes_filtradas = imagenes[indices_clases_utilizadas]
     etiquetas_filtradas = etiquetas[indices_clases_utilizadas]
-
-    # unique, counts = np.unique(etiquetas_filtradas, return_counts=True)
-    # print(dict(zip(unique, counts)))
     
+    # # Codificación One Hot de las clases
+    # OHE = OneHotEncoder()
+    # etiquetas_filtradas = OHE.fit_transform(etiquetas_filtradas)
+    # # Codificación One Hot de las clases
+    # OHE = OneHotEncoder()
+    # etiquetas_filtradas = OHE.fit_transform(etiquetas_filtradas)
+
     target= []
     for etiqueta in etiquetas_filtradas:
         if etiqueta==1:
@@ -50,14 +56,13 @@ def cargar_dataset():
 
 
 def data_augmentation(input_shape):
-    """Aplica técnicas de aumento de datos a las imágenes
+    """Realiza la ampliación de datos mediante transformaciones aleatorias.
 
-    Args:
-        input_shape (tuple): Dimensiones de la entrada de datos
-
-    Returns:
-        keras.models.Model: Modelo de aumento de datos
-    """
+    :param input_shape: Forma de entrada de los datos.
+    :type input_shape: tuple
+    :return: Modelo con las transformaciones aleatorias aplicadas.
+    :rtype: keras.models.Model
+    """    
     model_input= keras.Input(shape = input_shape)
     model_output= layers.RandomFlip("horizontal_and_vertical")(model_input)
     model_output= layers.RandomRotation(0.2)(model_output)
@@ -67,21 +72,26 @@ def data_augmentation(input_shape):
 
 
 def cnn_predict(img, tipo, modeloCNN, nombreCNN):
-    """Realiza predicciones utilizando un modelo de red neuronal convolucional pre-entrenado
+    """Realiza una predicción utilizando una red neuronal convolucional (CNN).
 
-    Args:
-        img (numpy.ndarray): Imagen a predecir
-        tipo (str): Tipo de modelo de red neuronal convolucional
-        modeloCNN (keras.models.Model): Modelo de red neuronal convolucional pre-entrenado
-
-    Returns:
-        numpy.ndarray: Predicciones del modelo.
-    """
+    :param img: La imagen de entrada para realizar la predicción.
+    :type img: numpy.ndarray
+    :param tipo: El tipo de imagen.
+    :type tipo: str
+    :param modeloCNN: El modelo de la red neuronal convolucional.
+    :type modeloCNN: keras.models.Model
+    :param nombreCNN: El nombre de la red neuronal convolucional.
+    :type nombreCNN: str
+    :return: La predicción realizada por la CNN.
+    :rtype: numpy.ndarray
+    """    
     file_path = f"{tipo + nombreCNN}.npy"
-    if os.path.exists(file_path):
-        return np.load(file_path)
+    if os.path.exists(os.path.join("predictores", file_path)):
+        return np.load(os.path.join("predictores", file_path))
     else:
         predict = modeloCNN.predict(img)
         predict = np.array(predict)
-        np.save(file_path, predict)
+        if not os.path.exists("predictores"):
+            os.makedirs("predictores")
+        np.save(os.path.join("predictores", file_path), predict)
         return predict

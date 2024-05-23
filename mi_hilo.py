@@ -1,4 +1,5 @@
 from threading import Thread
+from main import configuracion
 
 
 class MiHilo(Thread):
@@ -8,5 +9,5 @@ class MiHilo(Thread):
     def run(self):
         self.result = self._target(*self._args)
 
-    def result(self):
+    def get_result(self):
         return self.result

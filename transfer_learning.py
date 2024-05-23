@@ -14,6 +14,9 @@ import pandas as pd
 import utilidades
 import funciones_datos
 
+from main import configuracion
+
+
 def cargar_mn(input_shape):
     """Carga el modelo pre-entrenado MobileNet
 

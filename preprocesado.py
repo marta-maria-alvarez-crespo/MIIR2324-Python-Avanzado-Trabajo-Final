@@ -9,6 +9,9 @@ from skimage.color import rgb2gray
 from skimage import filters
 import os
 
+import json
+configuracion = json.load(open("./configuracion.json", "r", encoding= 'UTF-8'))
+
 def escala_grises(imagenes_filtradas):
     """Convierte las imágenes a escala de grises
 
@@ -22,7 +25,7 @@ def escala_grises(imagenes_filtradas):
     return imagenes_filtradas
 
 
-def disminucion_ruido(imagenes_filtradas, sigma):
+def disminucion_ruido(imagenes_filtradas):
     """Aplica un filtro Gaussiano para disminuir el ruido en las imágenes
 
     Args:
@@ -32,7 +35,7 @@ def disminucion_ruido(imagenes_filtradas, sigma):
     Returns:
         numpy.ndarray: Matriz de imágenes con el ruido reducido
     """
-    imagenes_filtradas = gaussian(imagenes_filtradas, sigma=sigma)
+    imagenes_filtradas = gaussian(imagenes_filtradas, sigma=configuracion["preprocesamiento"]["sigma"])
     return imagenes_filtradas
 
 
@@ -46,6 +49,9 @@ def realzar_bordes(imagenes_filtradas):
         numpy.ndarray: Matriz de imágenes con bordes realzados
     """
     imagenes_filtradas = filters.sobel(imagenes_filtradas)
+    return imagenes_filtradas
+
+def originales(imagenes_filtradas, *args):
     return imagenes_filtradas
 
 
@@ -64,7 +70,8 @@ def normalizacion_mn(imagenes_filtradas, nombre):
         return np.load(file_path)
     else:
         imagenes_filtradas = keras.applications.mobilenet.preprocess_input(imagenes_filtradas)
-        np.save(file_path, imagenes_filtradas)
+        if nombre != "temporal":
+            np.save(file_path, imagenes_filtradas)
         return imagenes_filtradas
 
 
@@ -87,7 +94,7 @@ def normalizacion_vgg(imagenes_filtradas, nombre):
         return imagenes_filtradas
     
     
-def preprocesado(imagenes_filtradas, sigma):
+def preprocesado(imagenes_filtradas):
     """Realiza el preprocesamiento de las imágenes
 
     Args:
@@ -98,12 +105,12 @@ def preprocesado(imagenes_filtradas, sigma):
         numpy.ndarray: Matriz de imágenes preprocesadas
     """
     # imagenes_filtradas = escala_grises(imagenes_filtradas)
-    imagenes_filtradas = disminucion_ruido(imagenes_filtradas, sigma)
+    imagenes_filtradas = disminucion_ruido(imagenes_filtradas)
     imagenes_filtradas = realzar_bordes(imagenes_filtradas)
     return imagenes_filtradas
 
 
-def preprocesado_mn(imagenes_filtradas, sigma, nombre):
+def preprocesado_mn(imagenes_filtradas, nombre):
     """Realiza el preprocesamiento específico para MobileNet
 
     Args:
@@ -118,13 +125,13 @@ def preprocesado_mn(imagenes_filtradas, sigma, nombre):
     if os.path.exists(file_path):
         return np.load(file_path)
     else:
-        imagenes_filtradas = preprocesado(imagenes_filtradas, sigma)
+        imagenes_filtradas = preprocesado(imagenes_filtradas)
         imagenes_filtradas = keras.applications.mobilenet.preprocess_input(imagenes_filtradas)
         np.save(file_path, imagenes_filtradas)
         return imagenes_filtradas
 
 
-def preprocesado_vgg(imagenes_filtradas, sigma, nombre):
+def preprocesado_vgg(imagenes_filtradas, nombre):
     """Realiza el preprocesamiento específico para VGG16
 
     Args:
@@ -139,7 +146,17 @@ def preprocesado_vgg(imagenes_filtradas, sigma, nombre):
     if os.path.exists(file_path):
         return np.load(file_path)
     else:
-        imagenes_filtradas = preprocesado(imagenes_filtradas, sigma)
+        imagenes_filtradas = preprocesado(imagenes_filtradas)
         imagenes_filtradas = keras.applications.vgg16.preprocess_input(imagenes_filtradas)
         np.save(file_path, imagenes_filtradas)
         return imagenes_filtradas
+    
+# Preprocesamiento de las imágenes
+imagenes_preprocesadas = {
+    "im_or_mn": originales,
+    "im_or_vgg": originales,
+    "im_norm_mn": normalizacion_mn,
+    "im_norm_vgg": normalizacion_vgg,
+    "im_preprocesadas_mn": preprocesado_mn,
+    "im_preprocesadas_vgg": preprocesado_vgg,
+}

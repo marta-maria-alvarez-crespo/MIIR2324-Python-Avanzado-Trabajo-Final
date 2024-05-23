@@ -1,7 +1,7 @@
 
-# Autores:  Marta María Álvarez Crespo y Juan Manuel Ramos Pérez
+# Autora:  Marta María Álvarez Crespo
 # Descripción: Funciones y utilidades para entrenar, evaluar y visualizar CNN para tareas de clasificación utilizando transfer-learning
-# Última modificación: 24 / 03 / 2024
+# Última modificación: 24 / 05 / 2024
 
 
 from itertools import cycle
@@ -15,28 +15,26 @@ import utilidades
 import funciones_datos
 
 def cargar_mn(input_shape):
-    """Carga el modelo pre-entrenado MobileNet
+    """Carga el modelo MobileNet pre-entrenado.
 
-    Args:
-        input_shape (tuple): tamaño de las imágenes a procesar
-
-    Returns:
-        keras.src.models.functional.Functional: MobileNet para el tamaño deseado
-    """
+    :param input_shape: Forma de la entrada de la imagen.
+    :type input_shape: tuple
+    :return: El modelo MobileNet pre-entrenado.
+    :rtype: keras.models.Model
+    """    
     modeloCNN = keras.applications.MobileNet(include_top= False, input_shape= input_shape)
     modeloCNN.summary()
     return modeloCNN
 
 
 def cargar_vgg(input_shape):
-    """Carga el modelo pre-entrenado VGG16
+    """Carga el modelo VGG16 pre-entrenado.
 
-    Args:
-        input_shape (tuple): tamaño de las imágenes a procesar
-
-    Returns:
-        keras.src.models.functional.Functional: VGG16 para el tamaño deseado
-    """
+    :param input_shape: Forma de la entrada de la imagen.
+    :type input_shape: tuple
+    :return: El modelo VGG16 pre-entrenado.
+    :rtype: keras.models.Model
+    """    
     modeloCNN = keras.applications.VGG16(include_top= False, input_shape= input_shape)
     modeloCNN.summary()
     
@@ -44,19 +42,23 @@ def cargar_vgg(input_shape):
 
 
 def crear_clasificador(entrada: tuple, neuronas : int, dropout : float, activation : str, numero_de_clases: int, numero_de_capas : int = 1):
-    """Compone un nevo TOP para la red en función de los parámetros indicados
+    """Crea un clasificador de redes neuronales.
 
-    Args:
-        entrada (tuple): Dimensiones de la entrada de datos
-        neuronas (int): Número de neuronas en la capa densa
-        dropout (float): Tasa de dropout para reducir el sobreajuste del modelo
-        activation (str): Función de activación para las capas densas
-        numero_de_clases (int): Número de clases en la tarea de clasificación
-        numero_de_capas (int): Número de capas ocultas a añadir al modelo
-
-    Returns:
-        keras.models.Model: Modelo de red neuronal completamente definido
-    """
+    :param entrada: Tupla que representa la forma de los datos de entrada.
+    :type entrada: tuple
+    :param neuronas: Número de neuronas en cada capa oculta.
+    :type neuronas: int
+    :param dropout: Valor de dropout para regularización.
+    :type dropout: float
+    :param activation: Función de activación para las capas ocultas.
+    :type activation: str
+    :param numero_de_clases: Número de clases en el problema de clasificación.
+    :type numero_de_clases: int
+    :param numero_de_capas: Número de capas ocultas en el modelo, por defecto es 1.
+    :type numero_de_capas: int, opcional
+    :return: Modelo de clasificador de redes neuronales.
+    :rtype: keras.models.Model
+    """    
     input_modelo= keras.Input(shape= entrada)
     output_modelo= layers.Flatten()(input_modelo)
     
@@ -65,29 +67,27 @@ def crear_clasificador(entrada: tuple, neuronas : int, dropout : float, activati
         output_modelo = layers.Dropout(dropout)(output_modelo)
     output_modelo= layers.Dense(numero_de_clases, activation='softmax')(output_modelo)
     
-    modelo= keras.models.Model(inputs= input_modelo, outputs= output_modelo)
-
-    # Mostrar resumen del modelo
-    # model.summary()
-    
+    modelo= keras.models.Model(inputs= input_modelo, outputs= output_modelo, name= "TOP_" + str(round(np.random.rand()* 1000, 4)))   
+     
     return modelo
 
 
 # Funciones relacionadas con el proceso de Transfer-Learning
 
 def entrenar_modelo(max_epochs, modelo, pred_entrenamiento, target_entrenamiento):
-    """Compila y entrena el modelo de red neuronal especificado.
+    """Entrena el modelo de transfer learning con los datos de entrenamiento.
 
-    Args:
-        max_epochs (int): Número máximo de iteraciones para el entrenamiento
-        model (keras.models.Model): Modelo de red neuronal a entrenar
-        pred_entrenamiento (numpy.ndarray): Datos de entrenamiento (características)
-        target_entrenamiento (numpy.ndarray): Etiquetas de entrenamiento (objetivos)
-        tasa_aprendizaje (float): Tamaño de los ajustes realizados a los pesos durante el entrenamiento
-
-    Returns:
-        resumen: Historia del entrenamiento del modelo
-    """
+    :param max_epochs: Número máximo de epochs de entrenamiento.
+    :type max_epochs: int
+    :param modelo: Modelo a entrenar.
+    :type modelo: keras.Model
+    :param pred_entrenamiento: Datos de entrenamiento para las características de entrada.
+    :type pred_entrenamiento: numpy.ndarray
+    :param target_entrenamiento: Datos de entrenamiento para las etiquetas objetivo.
+    :type target_entrenamiento: numpy.ndarray
+    :return: Resumen del entrenamiento del modelo.
+    :rtype: keras.callbacks.History
+    """    
     n_iter_no_change = 5
     
     earlystop_callback = callbacks.EarlyStopping(monitor='val_loss', verbose = 1, restore_best_weights = True, patience=n_iter_no_change) 
@@ -105,17 +105,18 @@ def entrenar_modelo(max_epochs, modelo, pred_entrenamiento, target_entrenamiento
     
     
 def metricas_entrenamiento(history, nombre, config, preprocesado):
-    """Grafica las métricas de entrenamiento del modelo a lo largo de los epochs
+    """Genera y guarda las métricas de entrenamiento para un modelo de aprendizaje profundo.
 
-    Args:
-        history (keras.callbacks.History): Objeto que contiene el historial de métricas y pérdidas durante el entrenamiento del modelo.
-        nombre (str): Nombre del modelo
-        config (str): Configuración específica del modelo
-        preprocesado (str): Nombre del procesado previo de imagen a clasificar
+    :param history: Historia del entrenamiento del modelo.
+    :type history: keras.callbacks.History
+    :param nombre: Nombre del modelo.
+    :type nombre: str
+    :param config: Configuración del modelo.
+    :type config: str
+    :param preprocesado: Tipo de preprocesamiento aplicado a los datos.
+    :type preprocesado: str
+    """   
 
-    Returns:
-        None
-    """
     # Gráfica de pérdida y exactitud
     acc = history.history['accuracy']
     val_acc = history.history['val_accuracy']
@@ -124,36 +125,42 @@ def metricas_entrenamiento(history, nombre, config, preprocesado):
 
     epochs = range(len(acc))
 
+    # Gráfica de la precisión del modelo
+    plt.figure()
     plt.plot(epochs, acc, 'b', label='Precisión de entrenamiento')
     plt.plot(epochs, val_acc, 'r', label='Precisión de validación')
     plt.title(f'Precisión de entrenamiento y validación para\n{config}_{nombre}')
     plt.legend()
     
+    # Gráfica de la pérdida del modelo
     plt.figure()
-    
     plt.plot(epochs, loss, 'b', label='Pérdida de entrenamiento')
     plt.plot(epochs, val_loss, 'r', label='Pérdida de validación')
     plt.title(f'Pérdida de entrenamiento y validación para\n{config}_{nombre}')
     plt.legend()
 
+    # Guardar las gráficas
     utilidades.crear_carpeta("metricas_entrenamiento/" + nombre + "/" + preprocesado)
     plt.savefig("metricas_entrenamiento/" + nombre + "/" + preprocesado + "/perdida_exactitud_"+ nombre + "_" + config + ".png")
     plt.close()
     
     
 def metricas_evaluacion(pred, target_test, nombre, config, preprocesado):
-    """Genera métricas de evaluación del modelo y visualizaciones, como curvas ROC y matrices de confusión.
+    """Calcula y guarda las métricas de evaluación para un modelo de aprendizaje profundo.
 
-    Args:
-        pred (numpy.ndarray): Predicciones del modelo
-        target_test (numpy.ndarray): Etiquetas verdaderas del conjunto de prueba
-        nombre (str): Nombre del modelo
-        config (str): Configuración específica del modelo
-        preprocesado (str): Nombre del procesado previo de imagen a clasificar
-
-    Returns:
-        None
+    :param pred: Predicciones del modelo.
+    :type pred: numpy.ndarray
+    :param target_test: Etiquetas verdaderas del conjunto de prueba.
+    :type target_test: numpy.ndarray
+    :param nombre: Nombre del modelo.
+    :type nombre: str
+    :param config: Configuración del modelo.
+    :type config: str
+    :param preprocesado: Tipo de preprocesamiento aplicado a los datos.
+    :type preprocesado: str
     """
+
+    # Gráficas de la curva ROC 
     _, ax = plt.subplots(figsize=(6, 6))
     
     colors = cycle(["aqua", "darkorange", "cornflowerblue"])
@@ -174,37 +181,47 @@ def metricas_evaluacion(pred, target_test, nombre, config, preprocesado):
         title="Extensión de la Característica Operativa del Receptor\na Multiclase Uno-contra-Resto",
     )
 
+    # Guardar las gráficas
     utilidades.crear_carpeta("metricas_evaluacion/" + nombre + "/" + preprocesado)
     plt.savefig("metricas_evaluacion/" + nombre + "/" + preprocesado + "/roc_curve_"+ nombre + "_" + config + ".png")
     plt.close()
     
+    # Matriz de confusión
     target_test= np.argmax(target_test, axis= 1)
     pred= np.argmax(pred, axis= 1)
-
-    cm_display = ConfusionMatrixDisplay.from_predictions(target_test, pred, cmap='Blues')
+    
+    ConfusionMatrixDisplay.from_predictions(target_test, pred, cmap='Blues')
     plt.title('Matriz de Confusión')
+    
+    # Guardar las gráficas
     plt.savefig("metricas_evaluacion/" + nombre + "/" + preprocesado + "/confusion_matrix_" + nombre + "_" + config + ".png")
     plt.close()
     
     
 def evaluar_modelo(max_epoch, modelo, pred_entrenamiento, pred_test, target_entrenamiento, target_test, nombre_dicc_cnn, config, tipo_ejecucion):
-    """Evalúa el modelo utilizando los datos de entrenamiento y prueba, y genera métricas de evaluación
+    """Entrena y evalúa un modelo de red neuronal utilizando transfer-learning.
 
-    Args:
-        max_epoch (int): Número máximo de epochs de entrenamiento
-        modelo (keras.Model): Modelo de red neuronal a evaluar
-        pred_entrenamiento (numpy.ndarray): Datos de entrada de entrenamiento
-        pred_test (numpy.ndarray): Datos de entrada de prueba
-        target_entrenamiento (numpy.ndarray): Etiquetas de entrenamiento
-        target_test (numpy.ndarray): Etiquetas de prueba
-        nombre_dicc_cnn (str): Nombre del modelo de red neuronal
-        config (str): Configuración específica del modelo
-        tasa_aprendizaje (float): Tamaño de los ajustes realizados a los pesos durante el entrenamiento 
-        tipo_ejecucion (str): Nombre de la ejecución a realizar
-
-    Returns:
-        tuple: Un par de arrays numpy que representan las predicciones del modelo y las etiquetas de prueba
-    """
+    :param max_epoch: Número máximo de iteraciones para el entrenamiento.
+    :type max_epoch: int
+    :param modelo: Modelo de red neuronal a entrenar.
+    :type modelo: keras.models.Model
+    :param pred_entrenamiento: Datos de entrenamiento (características).
+    :type pred_entrenamiento: numpy.ndarray
+    :param pred_test: Datos de prueba (características).
+    :type pred_test: numpy.ndarray
+    :param target_entrenamiento: Etiquetas de entrenamiento (objetivos).
+    :type target_entrenamiento: numpy.ndarray
+    :param target_test: Etiquetas de prueba (objetivos).
+    :type target_test: numpy.ndarray
+    :param nombre_dicc_cnn: Nombre del modelo.
+    :type nombre_dicc_cnn: str
+    :param config: Configuración específica del modelo.
+    :type config: str
+    :param tipo_ejecucion: Tipo de ejecución (entrenamiento o evaluación).
+    :type tipo_ejecucion: str
+    :return: Predicciones del modelo y etiquetas verdaderas del conjunto de prueba.
+    :rtype: tuple
+    """   
     resumen = entrenar_modelo(max_epoch, modelo, pred_entrenamiento, target_entrenamiento)
     # metricas_entrenamiento(resumen, nombre_dicc_cnn, config, tipo_ejecucion)
     resultados_predict= modelo.predict(pred_test)
@@ -213,17 +230,20 @@ def evaluar_modelo(max_epoch, modelo, pred_entrenamiento, pred_test, target_entr
     return resultados_predict, target_test
   
        
-def crear_dataframe(pred, target_test, nombre):
-    """Crea un DataFrame a partir de las predicciones y etiquetas de prueba, y calcula métricas de evaluación
+def crear_dataframe(pred, target_test, nombre, preprocesado):
+    """Calcula las métricas de evaluación del modelo y genera un DataFrame.
 
-    Args:
-        pred (numpy.ndarray): Predicciones del modelo
-        target_test (numpy.ndarray): Etiquetas de prueba
-        nombre (str): Nombre del modelo de entrenamiento utilizado
-
-    Returns:
-        pandas.DataFrame: DataFrame que contiene métricas de evaluación para cada clase.
-    """
+    :param pred: Predicciones del modelo.
+    :type pred: numpy.ndarray
+    :param target_test: Etiquetas verdaderas del conjunto de prueba.
+    :type target_test: numpy.ndarray
+    :param nombre: Nombre del modelo.
+    :type nombre: str
+    :param preprocesado: Nombre del procesado previo de imagen a clasificar.
+    :type preprocesado: str
+    :return: DataFrame con las métricas de evaluación.
+    :rtype: pandas.DataFrame
+    """    
     target_test= np.argmax(target_test, axis= 1)
     pred= np.argmax(pred, axis= 1)
      
@@ -235,6 +255,7 @@ def crear_dataframe(pred, target_test, nombre):
         if clase in ['0', '1', '2']: 
             data.append({
                 'Modelo de entrenamiento utilizado': nombre,
+                'Tipo de imagen': preprocesado,
                 'Clase a predecir': clase,
                 'Precision': metrics['precision'],
                 'Recall': metrics['recall'],
@@ -252,48 +273,75 @@ def crear_dataframe(pred, target_test, nombre):
     return df
 
 
-def transfer_learning(neurona, dropout, activacion, capa, max_epoch_tl, et_filtradas, pred_entrenamiento, pred_test, target_entrenamiento, target_test, df, nombre_dicc_cnn, tasa_aprendizaje, preprocesado):
-    """ Realiza transfer learning utilizando modelos de redes neuronales preentrenadas según los parámetros preestablecidos
+def transfer_learning(neurona: int, 
+                      dropout: float, 
+                      activacion: str, 
+                      capa: int, 
+                      max_epoch_tl: int, 
+                      et_filtradas: np.ndarray, 
+                      pred_entrenamiento: np.ndarray, 
+                      pred_test: np.ndarray, 
+                      target_entrenamiento: np.ndarray, 
+                      target_test: np.ndarray,
+                      df: pd.DataFrame,
+                      nombre_dicc_cnn: str, 
+                      tasa_aprendizaje: float, 
+                      preprocesado: str):
+    """Entrenamiento y evaluación de un modelo utilizando transfer-learning.
 
-    Args:
-        neuronas (list): Lista de enteros que representa el número de neuronas en cada capa oculta del modelo
-        dropouts (list): Lista de floats que representa la tasa de dropout en cada capa del modelo
-        activaciones (list): Lista de cadenas que representa las funciones de activación en cada capa del modelo
-        capas (int): Número de capas ocultas que tendrá el modelo
-        max_epoch_tl (int): Número máximo de epoch de entrenamiento
-        im_filtradas (array): Matriz de datos de entrada filtrados
-        et_filtradas (array): Matriz de etiquetas filtradas
-        pred_entrenamiento (array): Datos de predicción de entrenamiento
-        pred_test (array): Datos de predicción de prueba
-        target_entrenamiento (array): Etiquetas de entrenamiento
-        target_test (array): Etiquetas de prueba
-        df (DataFrame): DataFrame donde se almacenan los resultados
-        nombre_dicc_cnn (str): Nombre de la CNN a ejecutar 
-        cnn (keras.src.models.functional.Functional): el modelo preentrenado de Keras
-        tasa_aprendizaje (float): Tamaño de los ajustes realizados a los pesos durante el entrenamiento
-        preprocesado (str): Nombre del procesado previo de imagen a clasificar
-        
-        
-
-    Returns:
-    - df (DataFrame): DataFrame actualizado con los nuevos resultados
-    - ccn_elegida: CNN elegida para el entrenamiento
-    - configuraciones (dict): Diccionario que contiene las configuraciones de modelos probadas
-    - config (str): Configuración actual del modelo
-    """
+    :param neurona: Número de neuronas en la capa oculta.
+    :type neurona: int
+    :param dropout: Valor de dropout para regularización.
+    :type dropout: float
+    :param activacion: Función de activación de la capa oculta.
+    :type activacion: str
+    :param capa: Número de capas ocultas.
+    :type capa: int
+    :param max_epoch_tl: Número máximo de epochs de entrenamiento.
+    :type max_epoch_tl: int
+    :param et_filtradas: Etiquetas filtradas para el entrenamiento.
+    :type et_filtradas: numpy.ndarray
+    :param pred_entrenamiento: Datos de entrada de entrenamiento.
+    :type pred_entrenamiento: numpy.ndarray
+    :param pred_test: Datos de entrada de prueba.
+    :type pred_test: numpy.ndarray
+    :param target_entrenamiento: Etiquetas de entrenamiento.
+    :type target_entrenamiento: numpy.ndarray
+    :param target_test: Etiquetas de prueba.
+    :type target_test: numpy.ndarray
+    :param df: DataFrame que contiene métricas de evaluación.
+    :type df: pandas.DataFrame
+    :param nombre_dicc_cnn: Nombre del modelo de red neuronal.
+    :type nombre_dicc_cnn: str
+    :param tasa_aprendizaje: Tamaño de los ajustes realizados a los pesos durante el entrenamiento.
+    :type tasa_aprendizaje: float
+    :param preprocesado: Nombre del procesado previo de imagen a clasificar.
+    :type preprocesado: str
+    :return: DataFrame actualizado con métricas de evaluación, configuración del modelo y el modelo entrenado.
+    :rtype: tuple
+    """   
     
     # Creación de las configuraciones para experimentar
     modelo = crear_clasificador(pred_entrenamiento.shape[1:], neurona, dropout, activacion, et_filtradas[0].shape[0], capa)
     config= f"TOP_{str(neurona)}_{str(dropout)}_{str(activacion)}_{str(capa)}"
-    modelo.summary()
-    print(f"\n\n\n============ Se está probando {nombre_dicc_cnn} con la config {config} ==============\n") 
-        # Compilar el modelo
+
+    # Compilar el modelo
     modelo.compile(optimizer= optimizers.Adam(learning_rate=tasa_aprendizaje), loss= "categorical_crossentropy", metrics=['accuracy'])
     
-    target, predict_II = evaluar_modelo(max_epoch_tl, modelo, pred_entrenamiento, pred_test, target_entrenamiento, target_test, nombre_dicc_cnn, config, preprocesado)
-    # Concatenación de resultados al DataFrame
-    minidf= crear_dataframe(predict_II, target, nombre_dicc_cnn + " | " + config)
+    target, predict_II = evaluar_modelo(max_epoch=max_epoch_tl, 
+                                        modelo=modelo, 
+                                        pred_entrenamiento=pred_entrenamiento, 
+                                        pred_test=pred_test, 
+                                        target_entrenamiento=target_entrenamiento, 
+                                        target_test=target_test, 
+                                        nombre_dicc_cnn=nombre_dicc_cnn, 
+                                        config=config, 
+                                        tipo_ejecucion=preprocesado)
     
+    # Concatenación de resultados al DataFrame
+    minidf= crear_dataframe(predict_II, target, nombre_dicc_cnn + " | " + config, preprocesado)
+    
+    # Actualización del DataFrame
     if not(len(df)): df= minidf
     else: df= pd.concat([df, minidf], axis= 0, ignore_index= True)
         
@@ -303,17 +351,19 @@ def transfer_learning(neurona, dropout, activacion, capa, max_epoch_tl, et_filtr
 # Funciones relacionadas con el proceso de Fine-Tunning
 
 def mejor_modelo_df(dicc, configuraciones, df_mini, im_filtradas):
-    """Carga un modelo y sus configuraciones óptimas basadas en un DataFrame dado
+    """Devuelve el mejor modelo de una lista de modelos y configuraciones.
 
-    Args:
-        dicc (dict): Diccionario que contiene los modelos de red neuronal disponibles
-        configuraciones (dict): Diccionario que contiene las diferentes configuraciones de modelos
-        df_mini (pandas.DataFrame): DataFrame que contiene los resultados de la evaluación de los modelos
-        im_filtradas (numpy.ndarray): Datos de entrada (imágenes) utilizados para la evaluación del modelo
-
-    Returns:
-        tuple: Una tupla que contiene el modelo de red neuronal cargado y su configuración óptima
-    """
+    :param dicc: Un diccionario que contiene los modelos disponibles.
+    :type dicc: dict
+    :param configuraciones: Un diccionario que contiene las configuraciones disponibles.
+    :type configuraciones: dict
+    :param df_mini: Un DataFrame que contiene los resultados de los modelos.
+    :type df_mini: pandas.DataFrame
+    :param im_filtradas: Un array que contiene las imágenes filtradas.
+    :type im_filtradas: numpy.ndarray
+    :return: El mejor modelo y su configuración correspondiente.
+    :rtype: tuple
+    """    
     nombre_cnn, nombre_top = df_mini["Accuracy"].idxmax().rsplit(" | ")
     cnn = dicc[nombre_cnn](im_filtradas.shape[1:])
     cnn.trainable = False
@@ -323,18 +373,18 @@ def mejor_modelo_df(dicc, configuraciones, df_mini, im_filtradas):
 
 
 def reconstruccion_mejor_modelo_df(cnn, top):
-    """Construye un modelo de red neuronal completo a partir de una CNN y una capa densa superior
+    """Reconstruye el mejor modelo de un clasificador de redes neuronales convolucionales.
 
-    Args:
-        cnn (keras.models.Model): Modelo de red neuronal convolucional (CNN)
-        top (keras.models.Model): Capa densa superior para la clasificación
-
-    Returns:
-        keras.models.Model: Modelo de red neuronal completo
+    :param cnn: El modelo de la red neuronal convolucional.
+    :type cnn: keras.models.Model
+    :param top: La capa superior del modelo.
+    :type top: keras.layers.Layer
+    :return: El modelo completo reconstruido.
+    :rtype: keras.models.Model
     """
-    
     full_output = top(cnn.output)
     modelo_completo = keras.models.Model(inputs=cnn.input, outputs=full_output)
     modelo_completo.summary()
     
     return modelo_completo
+
