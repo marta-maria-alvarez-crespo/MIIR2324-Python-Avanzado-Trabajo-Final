@@ -147,7 +147,7 @@ def metricas_entrenamiento(history, nombre, config, preprocesado):
     plt.legend()
 
     # Guardar las gráficas
-    utilidades.crear_carpeta("metricas_entrenamiento/" + nombre + "/" + preprocesado)
+    utilidades.crear_carpeta("../metricas_entrenamiento/" + nombre + "/" + preprocesado)
     plt.savefig(
         "metricas_entrenamiento/" + nombre + "/" + preprocesado + "/perdida_exactitud_" + nombre + "_" + config + ".png"
     )
@@ -191,7 +191,7 @@ def metricas_evaluacion(pred, target_test, nombre, config, preprocesado):
     )
 
     # Guardar las gráficas
-    utilidades.crear_carpeta("metricas_evaluacion/" + nombre + "/" + preprocesado)
+    utilidades.crear_carpeta("../metricas_evaluacion/" + nombre + "/" + preprocesado)
     plt.savefig("metricas_evaluacion/" + nombre + "/" + preprocesado + "/roc_curve_" + nombre + "_" + config + ".png")
     plt.close()
 

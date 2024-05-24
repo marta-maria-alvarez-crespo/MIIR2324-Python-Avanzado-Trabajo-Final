@@ -87,12 +87,12 @@ def cnn_predict(img, tipo, modeloCNN, nombreCNN):
     :rtype: numpy.ndarray
     """
     file_path = f"{tipo + nombreCNN}.npy"
-    if os.path.exists(os.path.join("predictores", file_path)):
-        return np.load(os.path.join("predictores", file_path))
+    if os.path.exists(os.path.join("../predictores", file_path)):
+        return np.load(os.path.join("../predictores", file_path))
     else:
         predict = modeloCNN.predict(img)
         predict = np.array(predict)
-        if not os.path.exists("predictores"):
-            os.makedirs("predictores")
-        np.save(os.path.join("predictores", file_path), predict)
+        if not os.path.exists("../predictores"):
+            os.makedirs("../predictores")
+        np.save(os.path.join("../predictores", file_path), predict)
         return predict
