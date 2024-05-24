@@ -6,15 +6,15 @@
 
 import funciones_datos
 import fnc
-import json
 import numpy as np
 
-configuracion = json.load(open("./configuracion.json", "r", encoding="UTF-8"))
+import json
+configuracion = json.load(open("./configuracion.json", "r", encoding= 'UTF-8'))
 
 if __name__ == "__main__":
     # Carga del dataset
     im_filtradas, et_filtradas = funciones_datos.cargar_dataset()
-
+     
     im_filtradas = np.concatenate((im_filtradas[:50], im_filtradas[-50:]))
     et_filtradas = np.concatenate((et_filtradas[:50], et_filtradas[-50:]))
 
@@ -32,11 +32,13 @@ if __name__ == "__main__":
         pred_entrenamiento_or=pred_entrenamiento_or,
         pred_test_or=pred_test_or,
         target_entrenamiento=target_entrenamiento,
-        target_test=target_test,
+        target_test=target_test
     )
-
+        
     # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
     nombre_cnn, nombre_top, clave_cnn = fnc.selecciona_mejor_cnn(df_or, df_norm, df_preprocesado)
-
+        
     # Experimentación de Fine Tunning con los parámetros óptimos y almacenamiento de los resultados en un dataframe
-    fnc.ejecuta_fine_tunning_mejor_cnn(im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
+    fnc.ejecuta_fine_tunning_mejor_cnn(
+        im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn
+    )

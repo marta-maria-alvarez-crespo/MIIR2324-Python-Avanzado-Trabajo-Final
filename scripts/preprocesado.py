@@ -2,17 +2,15 @@
 # Descripción:  Archivo con las funciones principales de tratamiento de las imágenes para realizar la experimentación
 # Última modificación: 20 / 03 / 2024
 
-import os
-import json
-import numpy as np
 from skimage.filters import gaussian
+import numpy as np
 from tensorflow import keras
 from skimage.color import rgb2gray
 from skimage import filters
+import os
 
-
-configuracion = json.load(open("./configuracion.json", "r", encoding="UTF-8"))
-
+import json
+configuracion = json.load(open("./configuracion.json", "r", encoding= 'UTF-8'))
 
 def escala_grises(imagenes_filtradas):
     """Convierte las imágenes en escala de grises.
@@ -22,7 +20,7 @@ def escala_grises(imagenes_filtradas):
     :return: Lista de imágenes en escala de grises.
     :rtype: list
     """
-    imagenes_filtradas = rgb2gray(imagenes_filtradas)
+    imagenes_filtradas = rgb2gray(imagenes_filtradas)  
     return imagenes_filtradas
 
 
@@ -49,7 +47,6 @@ def realzar_bordes(imagenes_filtradas):
     imagenes_filtradas = filters.sobel(imagenes_filtradas)
     return imagenes_filtradas
 
-
 def originales(imagenes_filtradas, *args):
     """Función que devuelve las imágenes originales sin filtrar.
 
@@ -58,7 +55,7 @@ def originales(imagenes_filtradas, *args):
     :param args: Argumentos adicionales (opcional).
     :return: Lista de imágenes filtradas originales.
     :rtype: list
-    """
+    """    
     return imagenes_filtradas
 
 
@@ -71,7 +68,7 @@ def normalizacion_mn(imagenes_filtradas, nombre):
     :type nombre: str
     :return: Las imágenes filtradas normalizadas.
     :rtype: numpy.ndarray
-    """
+    """    
     file_path = f"{nombre}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
@@ -91,7 +88,7 @@ def normalizacion_vgg(imagenes_filtradas, nombre):
     :type nombre: str
     :return: Las imágenes filtradas normalizadas.
     :rtype: numpy.ndarray
-    """
+    """    
     file_path = f"{nombre}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
@@ -99,8 +96,8 @@ def normalizacion_vgg(imagenes_filtradas, nombre):
         imagenes_filtradas = keras.applications.vgg16.preprocess_input(imagenes_filtradas)
         np.save(file_path, imagenes_filtradas)
         return imagenes_filtradas
-
-
+    
+    
 def preprocesado(imagenes_filtradas):
     """Realiza el preprocesamiento elegido de las imágenes filtradas.
 
@@ -108,7 +105,7 @@ def preprocesado(imagenes_filtradas):
     :type imagenes_filtradas: list
     :return: Lista de imágenes preprocesadas.
     :rtype: list
-    """
+    """    
     imagenes_filtradas = disminucion_ruido(imagenes_filtradas)
     imagenes_filtradas = realzar_bordes(imagenes_filtradas)
 
@@ -122,7 +119,7 @@ def preprocesado_mn(imagenes_filtradas, nombre):
     :type imagenes_filtradas: list
     :return: Lista de imágenes preprocesadas.
     :rtype: list
-    """
+    """    
     file_path = f"{nombre}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
@@ -140,7 +137,7 @@ def preprocesado_vgg(imagenes_filtradas, nombre):
     :type imagenes_filtradas: list
     :return: Lista de imágenes preprocesadas.
     :rtype: list
-    """
+    """    
     file_path = f"{nombre}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
@@ -149,8 +146,7 @@ def preprocesado_vgg(imagenes_filtradas, nombre):
         imagenes_filtradas = keras.applications.vgg16.preprocess_input(imagenes_filtradas)
         np.save(file_path, imagenes_filtradas)
         return imagenes_filtradas
-
-
+    
 # Preprocesamiento de las imágenes
 imagenes_preprocesadas = {
     "im_or_mn": originales,
