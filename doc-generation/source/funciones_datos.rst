@@ -1,5 +1,5 @@
-funciones\_datos module
-=======================
+Módulo "funciones\_datos"
+========================
 
 .. automodule:: funciones_datos
    :members:

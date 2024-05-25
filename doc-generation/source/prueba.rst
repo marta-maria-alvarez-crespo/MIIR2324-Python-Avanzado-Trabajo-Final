@@ -1,5 +1,5 @@
-prueba module
-=============
+Módulo "prueba"
+===============
 
 .. automodule:: prueba
    :members:

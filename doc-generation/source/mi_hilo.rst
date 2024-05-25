@@ -1,5 +1,5 @@
-mi\_hilo module
-===============
+Módulo "mi\_hilo"
+=================
 
 .. automodule:: mi_hilo
    :members:

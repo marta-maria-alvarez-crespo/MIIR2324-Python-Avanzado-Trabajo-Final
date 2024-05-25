@@ -1,6 +1,7 @@
 # Autora:  Marta María Álvarez Crespo
 # Descripción: Funciones y utilidades para entrenar, evaluar y visualizar CNN para tareas de clasificación utilizando transfer-learning
-# Última modificación: 24 / 05 / 2024
+# Última modificación: 25 / 05 / 2024
+# GitHub: www.github.com/marta-maria-alvarez-crespo/MIIR2324-Python-Avanzado-Trabajo-Final
 
 
 from itertools import cycle

@@ -1,5 +1,5 @@
-preprocesado module
-===================
+Módulo "preprocesado"
+====================
 
 .. automodule:: preprocesado
    :members:

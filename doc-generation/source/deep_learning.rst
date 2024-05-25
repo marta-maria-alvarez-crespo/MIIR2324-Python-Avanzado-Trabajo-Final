@@ -1,6 +1,5 @@
-.. _deep_learning:
 
-Módulo deep\_learning
+Módulo "deep\_learning"
 =====================
 
 .. automodule:: deep_learning

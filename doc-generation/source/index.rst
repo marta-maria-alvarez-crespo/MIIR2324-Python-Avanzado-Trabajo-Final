@@ -3,46 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Entrenamiento de RN para la identificacion de galaxias's documentation!
-==================================================================================
+**Trabajo Final - Python para Ingenieros Avanzado** 
+======================================================
 
+Máster en Informática Industrial y Robótica - Universidade da Coruña - Curso 2023-2024
+
+Contents
+========
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-
-.. automodule:: scripts.configuracion.rst
-   :members:
-
-.. automodule:: scripts.deep_learning.rst
-   :members:
-
-.. automodule:: scripts.fnc.rst
-   :members:
-
-.. automodule:: scripts.funciones_datos.rst
-   :members:
-
-.. automodule:: scripts.mi_hilo.rst
-   :members:
-
-.. automodule:: scripts.preprocesado.rst
-   :members:
-
-.. automodule:: scripts.prueba.rst
-   :members:
-
-.. automodule:: scripts.utilidades.rst
-   :members:
-
-.. automodule:: scripts.main.rst
-   :members:
-
+   deep_learning
+   preprocesado
+   prueba
+   main
+   mi_hilo
+   utilidades
+   funciones_datos
+   fnc

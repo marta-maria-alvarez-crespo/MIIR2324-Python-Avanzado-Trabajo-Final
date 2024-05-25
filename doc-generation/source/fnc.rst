@@ -1,4 +1,4 @@
-fnc module
+Módulo "fnc"
 ==========
 
 .. automodule:: fnc
