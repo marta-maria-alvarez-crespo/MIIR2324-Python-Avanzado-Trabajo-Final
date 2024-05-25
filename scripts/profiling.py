@@ -10,10 +10,12 @@ import fnc
 import funciones_datos
 import numpy as np
 import pandas as pd
-
+import pstats
 
 
 def main():
+
+    configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
     # Carga del dataset
     im_filtradas, et_filtradas = funciones_datos.cargar_dataset()
@@ -29,6 +31,7 @@ def main():
         target_test,
     ) = fnc.division_preparacion_datos_entrada(im_filtradas=im_filtradas, et_filtradas=et_filtradas)
 
+    
     # Ejecución de los experimentos de Transfer Learning configurados
     configuraciones, df_or, df_norm, df_preprocesado = fnc.ejecuta_experimentos_transfer_learning(
         et_filtradas=et_filtradas,
@@ -36,6 +39,8 @@ def main():
         pred_test_or=pred_test_or,
         target_entrenamiento=target_entrenamiento,
         target_test=target_test,
+        v=[0, 1, 0],
+        mw=4
     )
 
     # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
@@ -46,4 +51,22 @@ def main():
 
 
 if __name__ == "__main__":
-    cProfile.run('main()')
+    cProfile.run("main()", filename="output.pstats", sort="cumulative")
+
+    stats = pstats.Stats("output.pstats")
+
+    stats_data = []
+    for func, (cc, nc, tt, ct, callers) in stats.stats.items():
+        filename, line, funcname = func
+        stats_data.append(
+            {"filename": filename, "line": line, "funcname": funcname, "cc": cc, "nc": nc, "tt": tt, "ct": ct}
+        )
+
+    df = pd.DataFrame(stats_data)
+
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    resultados_path = os.path.join(dir_path, "../Medicion_de_tiempos")
+    if not os.path.exists(resultados_path):
+        os.makedirs(resultados_path)
+
+    df.to_excel(os.path.join(resultados_path, "profiling.xlsx"))
