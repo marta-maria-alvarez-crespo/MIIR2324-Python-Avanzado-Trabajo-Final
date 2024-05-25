@@ -12,7 +12,7 @@ from mi_hilo import MiHilo
 from preprocesado import imagenes_preprocesadas
 import json
 
-configuracion = json.load(open("./configuracion.json", "r", encoding="UTF-8"))
+configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
 #  Creación de un diccionario con las CNN pre-entrenadas que se deseen cargar
 cnn_preentrenadas = {"mn": deep_learning.cargar_mn, "vgg": deep_learning.cargar_vgg}
@@ -135,12 +135,14 @@ def ejecuta_experimentos_transfer_learning(
     df_norm = df_mini[df_mini["Tipo de imagen"] == "im_norm"]
     df_preprocesado = df_mini[df_mini["Tipo de imagen"] == "im_preprocesadas"]
 
-    if not os.path.exists("../Resultados_Dataframes"):
-        os.makedirs("../Resultados_Dataframes")
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    resultados_path = os.path.join(dir_path, "../Resultados_Dataframes")
+    if not os.path.exists(resultados_path):
+        os.makedirs(resultados_path)
 
-    df_or.to_excel(os.path.join("../Resultados_Dataframes", "resultados_transfer_learning_original.xlsx"))
-    df_norm.to_excel(os.path.join("../Resultados_Dataframes", "resultados_transfer_learning_normalizado.xlsx"))
-    df_preprocesado.to_excel(os.path.join("../Resultados_Dataframes", "resultados_transfer_learning_preprocesado.xlsx"))
+    df_or.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_original.xlsx"))
+    df_norm.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_normalizado.xlsx"))
+    df_preprocesado.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_preprocesado.xlsx"))
 
     return configuraciones, df_or, df_norm, df_preprocesado
 

@@ -11,7 +11,7 @@ from skimage.color import rgb2gray
 from skimage import filters
 
 
-configuracion = json.load(open("./configuracion.json", "r", encoding="UTF-8"))
+configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
 
 def escala_grises(imagenes_filtradas):
@@ -72,7 +72,7 @@ def normalizacion_mn(imagenes_filtradas, nombre):
     :return: Las imágenes filtradas normalizadas.
     :rtype: numpy.ndarray
     """
-    file_path = f"{nombre}.npy"
+    file_path = f"./predictores/{nombre}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
     else:
@@ -92,7 +92,7 @@ def normalizacion_vgg(imagenes_filtradas, nombre):
     :return: Las imágenes filtradas normalizadas.
     :rtype: numpy.ndarray
     """
-    file_path = f"{nombre}.npy"
+    file_path = f"./predictores/{nombre}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
     else:
@@ -123,7 +123,7 @@ def preprocesado_mn(imagenes_filtradas, nombre):
     :return: Lista de imágenes preprocesadas.
     :rtype: list
     """
-    file_path = f"{nombre}.npy"
+    file_path = f"./predictores/{nombre}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
     else:
@@ -141,7 +141,7 @@ def preprocesado_vgg(imagenes_filtradas, nombre):
     :return: Lista de imágenes preprocesadas.
     :rtype: list
     """
-    file_path = f"{nombre}.npy"
+    file_path = f"./predictores/{nombre}.npy"
     if os.path.exists(file_path):
         return np.load(file_path)
     else:

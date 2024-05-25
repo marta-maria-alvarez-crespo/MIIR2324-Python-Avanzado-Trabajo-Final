@@ -9,7 +9,7 @@ import fnc
 import json
 import numpy as np
 
-configuracion = json.load(open("./configuracion.json", "r", encoding="UTF-8"))
+configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
 if __name__ == "__main__":
     # Carga del dataset

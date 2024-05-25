@@ -11,7 +11,7 @@ import os
 
 import json
 
-configuracion = json.load(open("./configuracion.json", "r", encoding="UTF-8"))
+configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
 
 def cargar_dataset():
@@ -86,13 +86,16 @@ def cnn_predict(img, tipo, modeloCNN, nombreCNN):
     :return: La predicción realizada por la CNN.
     :rtype: numpy.ndarray
     """
-    file_path = f"{tipo + nombreCNN}.npy"
-    if os.path.exists(os.path.join("../predictores", file_path)):
-        return np.load(os.path.join("../predictores", file_path))
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+
+    # Usa la ruta absoluta para buscar y guardar el archivo en la carpeta 'predictores'
+    file_path = os.path.join(dir_path, f"../predictores/{tipo + nombreCNN}.npy")
+    if os.path.exists(file_path):
+        return np.load(file_path)
     else:
         predict = modeloCNN.predict(img)
         predict = np.array(predict)
-        if not os.path.exists("../predictores"):
-            os.makedirs("../predictores")
-        np.save(os.path.join("../predictores", file_path), predict)
+        if not os.path.exists(os.path.join(dir_path, "../predictores")):
+            os.makedirs(os.path.join(dir_path, "../predictores"))
+        np.save(file_path, predict)
         return predict

@@ -19,26 +19,26 @@ Indices and tables
 * :ref:`search`
 
 
-.. automodule:: scripts.deep_learning
+.. automodule:: scripts.deep_learning.rst
    :members:
 
-.. automodule:: scripts.fnc
+.. automodule:: scripts.fnc.rst
    :members:
 
-.. automodule:: scripts.funciones_datos
+.. automodule:: scripts.funciones_datos.rst
    :members:
 
-.. automodule:: scripts.mi_hilo
+.. automodule:: scripts.mi_hilo.rst
    :members:
 
-.. automodule:: scripts.preprocesado
+.. automodule:: scripts.preprocesado.rst
    :members:
 
-.. automodule:: scripts.prueba
+.. automodule:: scripts.prueba.rst
    :members:
 
-.. automodule:: scripts.utilidades
+.. automodule:: scripts.utilidades.rst
    :members:
 
-.. automodule:: scripts.main
+.. automodule:: scripts.main.rst
    :members:
