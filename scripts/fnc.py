@@ -52,7 +52,7 @@ def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
 
 
 def ejecuta_experimentos_transfer_learning(
-    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v=0, mw=4
+    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v, mw
 ):
     """Realiza experimentos de Transfer Learning utilizando los parámetros establecidos y almacena los resultados en un dataframe.
 
