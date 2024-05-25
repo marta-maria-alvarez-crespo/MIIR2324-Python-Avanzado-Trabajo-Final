@@ -19,6 +19,9 @@ Indices and tables
 * :ref:`search`
 
 
+.. automodule:: scripts.configuracion.rst
+   :members:
+
 .. automodule:: scripts.deep_learning.rst
    :members:
 
@@ -42,3 +45,4 @@ Indices and tables
 
 .. automodule:: scripts.main.rst
    :members:
+

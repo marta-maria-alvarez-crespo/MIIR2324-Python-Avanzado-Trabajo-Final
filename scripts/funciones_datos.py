@@ -1,4 +1,4 @@
-# Autores:  Marta María Álvarez Crespo
+# Autora:  Marta María Álvarez Crespo
 # Descripción: Carga y tratamiento de los datos seleccionados para una red neuronal
 # Última modificación: 20 / 05 / 2024
 
