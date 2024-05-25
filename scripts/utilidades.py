@@ -1,9 +1,9 @@
-# Autores:  Marta María Álvarez Crespo y Juan Manuel Ramos Pérez
+# Autora:  Marta María Álvarez Crespo
 # Descripción:  Archivo de utilidades para el manejo de datos
-# Última modificación: 23 / 03 / 2024
+# Última modificación: 25 / 03 / 2024
+# GitHub: www.github.com/marta-maria-alvarez-crespo/MIIR2324-Python-Avanzado-Trabajo-Final
 
 import os
-
 
 def crear_carpeta(nombre_carpeta: str = "nombre_carpeta"):
     """Crea una carpeta con el nombre especificado.

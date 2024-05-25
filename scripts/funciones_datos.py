@@ -1,15 +1,16 @@
 # Autora:  Marta María Álvarez Crespo
 # Descripción: Carga y tratamiento de los datos seleccionados para una red neuronal
-# Última modificación: 20 / 05 / 2024
+# Última modificación: 25 / 05 / 2024
+# GitHub: www.github.com/marta-maria-alvarez-crespo/MIIR2324-Python-Avanzado-Trabajo-Final
 
-import numpy as np
+
+import os
+import json
 import h5py
+import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.preprocessing import OneHotEncoder
-import os
-
-import json
 
 configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 

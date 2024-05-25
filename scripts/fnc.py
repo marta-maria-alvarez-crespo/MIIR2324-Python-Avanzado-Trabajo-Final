@@ -1,17 +1,20 @@
 # Autora:  Marta María Álvarez Crespo
 # Descripción: Funciones necesarias para la ejecución de los experimentos de Transfer Learning y Fine-Tuning.
-# Última modificación: 24 / 05 / 2024
+# Última modificación: 25 / 05 / 2024
+# GitHub: www.github.com/marta-maria-alvarez-crespo/MIIR2324-Python-Avanzado-Trabajo-Final
 
-from sklearn.model_selection import train_test_split
-from tensorflow.keras import optimizers
-import pandas as pd
+
 import os
+import json
 import deep_learning
 import funciones_datos
+import pandas as pd
 from mi_hilo import MiHilo
+from tensorflow.keras import optimizers
 from preprocesado import imagenes_preprocesadas
 from concurrent.futures import ThreadPoolExecutor
-import json
+from sklearn.model_selection import train_test_split
+
 
 configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
@@ -49,7 +52,7 @@ def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
 
 
 def ejecuta_experimentos_transfer_learning(
-    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v, mw
+    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v=0, mw=4
 ):
     """Realiza experimentos de Transfer Learning utilizando los parámetros establecidos y almacena los resultados en un dataframe.
 

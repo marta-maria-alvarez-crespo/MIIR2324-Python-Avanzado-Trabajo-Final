@@ -3,17 +3,15 @@
 # Última modificación: 25 / 05 / 2024
 # GitHub: www.github.com/marta-maria-alvarez-crespo/MIIR2324-Python-Avanzado-Trabajo-Final
 
-
-from itertools import cycle
+import utilidades
 import numpy as np
+import pandas as pd
+import funciones_datos
+import matplotlib.pyplot as plt
+from itertools import cycle
 from tensorflow import keras
 from tensorflow.keras import callbacks, layers, optimizers
 from sklearn.metrics import RocCurveDisplay, ConfusionMatrixDisplay, classification_report
-import matplotlib.pyplot as plt
-import pandas as pd
-import utilidades
-import funciones_datos
-
 
 def cargar_mn(input_shape):
     """Carga el modelo MobileNet pre-entrenado.
