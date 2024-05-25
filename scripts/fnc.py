@@ -49,11 +49,7 @@ def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
 
 
 def ejecuta_experimentos_transfer_learning(
-    et_filtradas,
-    pred_entrenamiento_or,
-    pred_test_or,
-    target_entrenamiento,
-    target_test,
+    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v, mw
 ):
     """Realiza experimentos de Transfer Learning utilizando los parámetros establecidos y almacena los resultados en un dataframe.
 
@@ -76,16 +72,30 @@ def ejecuta_experimentos_transfer_learning(
         "vgg": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}},
     }
 
+    # # Experimentación de Transfer Learning con los parámetros establecidos y almacenamiento de los resultados en el dataframe creado
+    # if configuracion["ejecucion"]["multihilo_clase_thread"]:
+    #     df_tl_or, configuraciones = multihilo_clase_thread(
+    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+    #     )
+    # elif configuracion["ejecucion"]["multihilo_pool_executor"]:
+    #     df_tl_or, configuraciones = multihilo_pool_executor(
+    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+    #     )
+    # elif configuracion["ejecucion"]["secuencial"]:
+    #     df_tl_or, configuraciones = secuencial(
+    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+    #     )
+
     # Experimentación de Transfer Learning con los parámetros establecidos y almacenamiento de los resultados en el dataframe creado
-    if configuracion["ejecucion"]["multihilo_clase_thread"]:
+    if v[0]:
         df_tl_or, configuraciones = multihilo_clase_thread(
             et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
         )
-    elif configuracion["ejecucion"]["multihilo_pool_executor"]:
+    elif v[1]:
         df_tl_or, configuraciones = multihilo_pool_executor(
-            et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+            et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones, mw
         )
-    elif configuracion["ejecucion"]["secuencial"]:
+    elif v[2]:
         df_tl_or, configuraciones = secuencial(
             et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
         )
@@ -158,10 +168,10 @@ def multihilo_clase_thread(
 
 
 def multihilo_pool_executor(
-    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones, mw
 ):
     futures = []
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    with ThreadPoolExecutor(max_workers=mw) as pool:
         for n_cnn, pruebas in configuraciones.items():
             cnn = cnn_preentrenadas[n_cnn](pred_entrenamiento_or.shape[1:])
             for prueba in pruebas:
