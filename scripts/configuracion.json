@@ -34,6 +34,12 @@
         "seed": 8
     },
 
+    "ejecucion": {
+        "secuencial": false,
+        "multihilo_clase_thread": false,
+        "multihilo_pool_executor": true
+    },
+
     "preprocesamiento": {
         "sigma": 4
     }

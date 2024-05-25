@@ -10,6 +10,7 @@ import deep_learning
 import funciones_datos
 from mi_hilo import MiHilo
 from preprocesado import imagenes_preprocesadas
+from concurrent.futures import ThreadPoolExecutor
 import json
 
 configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
@@ -70,19 +71,51 @@ def ejecuta_experimentos_transfer_learning(
     :rtype: tuple
     """
 
-    dicc_base = {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}}
     configuraciones = {
         "mn": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}},
         "vgg": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}},
     }
 
-    hilos = []
-
     # Experimentación de Transfer Learning con los parámetros establecidos y almacenamiento de los resultados en el dataframe creado
+    if configuracion["ejecucion"]["multihilo_clase_thread"]:
+        df_tl_or, configuraciones = multihilo_clase_thread(
+            et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+        )
+    elif configuracion["ejecucion"]["multihilo_pool_executor"]:
+        df_tl_or, configuraciones = multihilo_pool_executor(
+            et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+        )
+    elif configuracion["ejecucion"]["secuencial"]:
+        df_tl_or, configuraciones = secuencial(
+            et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+        )
 
+    # Guardado de los datos originales en Excel
+    df_mini = df_tl_or.set_index("Modelo de entrenamiento utilizado")
+
+    df_or = df_mini[df_mini["Tipo de imagen"] == "im_or"]
+    df_norm = df_mini[df_mini["Tipo de imagen"] == "im_norm"]
+    df_preprocesado = df_mini[df_mini["Tipo de imagen"] == "im_preprocesadas"]
+
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    resultados_path = os.path.join(dir_path, "../Resultados_Dataframes")
+    if not os.path.exists(resultados_path):
+        os.makedirs(resultados_path)
+
+    df_or.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_original.xlsx"))
+    df_norm.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_normalizado.xlsx"))
+    df_preprocesado.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_preprocesado.xlsx"))
+
+    return configuraciones, df_or, df_norm, df_preprocesado
+
+
+def multihilo_clase_thread(
+    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+):
+    hilos = []
     for n_cnn, pruebas in configuraciones.items():
         cnn = cnn_preentrenadas[n_cnn](pred_entrenamiento_or.shape[1:])
-        for prueba in pruebas.keys():
+        for prueba in pruebas:
             prueba_mas_cnn = prueba + "_" + n_cnn
             predictores_train = imagenes_preprocesadas[prueba_mas_cnn](pred_entrenamiento_or, prueba_mas_cnn)
             predictores_train = funciones_datos.cnn_predict(predictores_train, "entrenamiento", cnn, n_cnn)
@@ -99,7 +132,6 @@ def ejecuta_experimentos_transfer_learning(
                                     et_filtradas,
                                     target_entrenamiento,
                                     target_test,
-                                    # configuraciones,
                                     n_cnn,
                                     predictores_train,
                                     predictores_test,
@@ -120,31 +152,97 @@ def ejecuta_experimentos_transfer_learning(
     # Creación de un dataframe con los resultados obtenidos en Transfer Learning
     df_tl_or = pd.DataFrame()
     for hilo in hilos:
-        mini_df_tl, nombre_dicc_cnn, prueba, config, modelo = hilo.get_result()
-        configuraciones[nombre_dicc_cnn][prueba][config] = modelo
-        # Si el dataframe está vacío, se asigna el mini_df_tl, si no, se concatenan ambos dataframes
-        if not len(df_tl_or):
-            df_tl_or = mini_df_tl
-        else:
-            df_tl_or = pd.concat([df_tl_or, mini_df_tl], join="outer", axis=0, ignore_index=True)
+        diccionario = hilo.get_result()
+        df_tl_or, configuraciones = resultados_hilo(configuraciones, df_tl_or, diccionario)
+    return df_tl_or, configuraciones
 
-    # Guardado de los datos originales en Excel
-    df_mini = df_tl_or.set_index("Modelo de entrenamiento utilizado")
 
-    df_or = df_mini[df_mini["Tipo de imagen"] == "im_or"]
-    df_norm = df_mini[df_mini["Tipo de imagen"] == "im_norm"]
-    df_preprocesado = df_mini[df_mini["Tipo de imagen"] == "im_preprocesadas"]
+def multihilo_pool_executor(
+    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+):
+    futures = []
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for n_cnn, pruebas in configuraciones.items():
+            cnn = cnn_preentrenadas[n_cnn](pred_entrenamiento_or.shape[1:])
+            for prueba in pruebas:
+                prueba_mas_cnn = prueba + "_" + n_cnn
+                predictores_train = imagenes_preprocesadas[prueba_mas_cnn](pred_entrenamiento_or, prueba_mas_cnn)
+                predictores_train = funciones_datos.cnn_predict(predictores_train, "entrenamiento", cnn, n_cnn)
+                predictores_test = imagenes_preprocesadas[prueba_mas_cnn](pred_test_or, prueba_mas_cnn)
+                predictores_test = funciones_datos.cnn_predict(predictores_test, "validacion", cnn, n_cnn)
+                for neurona in configuracion["parametros_top"]["neuronas"]:
+                    for dropout in configuracion["parametros_top"]["dropouts"]:
+                        for activacion in configuracion["parametros_top"]["activaciones"]:
+                            for capa in configuracion["parametros_top"]["capas"]:
+                                futures.append(
+                                    pool.submit(
+                                        hilo_tl,
+                                        et_filtradas,
+                                        target_entrenamiento,
+                                        target_test,
+                                        n_cnn,
+                                        predictores_train,
+                                        predictores_test,
+                                        neurona,
+                                        dropout,
+                                        activacion,
+                                        capa,
+                                        configuracion["parametros_top"]["transfer_learning"]["max_epoch"],
+                                        prueba,
+                                    )
+                                )
+        results = [f.result() for f in futures]
 
-    dir_path = os.path.dirname(os.path.abspath(__file__))
-    resultados_path = os.path.join(dir_path, "../Resultados_Dataframes")
-    if not os.path.exists(resultados_path):
-        os.makedirs(resultados_path)
+    df_tl_or = pd.DataFrame()
+    for result in results:
+        df_tl_or, configuraciones = resultados_hilo(configuraciones, df_tl_or, result)
+    return df_tl_or, configuraciones
 
-    df_or.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_original.xlsx"))
-    df_norm.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_normalizado.xlsx"))
-    df_preprocesado.to_excel(os.path.join(resultados_path, "resultados_transfer_learning_preprocesado.xlsx"))
 
-    return configuraciones, df_or, df_norm, df_preprocesado
+def resultados_hilo(configuraciones, df_tl_or, diccionario):
+    configuraciones[diccionario["nombre_dicc_cnn"]][diccionario["prueba"]][diccionario["config"]] = diccionario[
+        "modelo"
+    ]
+    # Si el dataframe está vacío, se asigna el mini_df_tl, si no, se concatenan ambos dataframes
+    if len(df_tl_or) == 0:
+        df_tl_or = diccionario["dataframe"]
+    else:
+        df_tl_or = pd.concat([df_tl_or, diccionario["dataframe"]], join="outer", axis=0, ignore_index=True)
+    return df_tl_or, configuraciones
+
+
+def secuencial(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones):
+    df_tl_or = pd.DataFrame()
+
+    for n_cnn, pruebas in configuraciones.items():
+        cnn = cnn_preentrenadas[n_cnn](pred_entrenamiento_or.shape[1:])
+        for prueba in pruebas:
+            prueba_mas_cnn = prueba + "_" + n_cnn
+            predictores_train = imagenes_preprocesadas[prueba_mas_cnn](pred_entrenamiento_or, prueba_mas_cnn)
+            predictores_train = funciones_datos.cnn_predict(predictores_train, "entrenamiento", cnn, n_cnn)
+            predictores_test = imagenes_preprocesadas[prueba_mas_cnn](pred_test_or, prueba_mas_cnn)
+            predictores_test = funciones_datos.cnn_predict(predictores_test, "validacion", cnn, n_cnn)
+
+            for neurona in configuracion["parametros_top"]["neuronas"]:
+                for dropout in configuracion["parametros_top"]["dropouts"]:
+                    for activacion in configuracion["parametros_top"]["activaciones"]:
+                        for capa in configuracion["parametros_top"]["capas"]:
+                            diccionario = hilo_tl(
+                                et_filtradas,
+                                target_entrenamiento,
+                                target_test,
+                                n_cnn,
+                                predictores_train,
+                                predictores_test,
+                                neurona,
+                                dropout,
+                                activacion,
+                                capa,
+                                configuracion["parametros_top"]["transfer_learning"]["max_epoch"],
+                                prueba,
+                            )
+                            df_tl_or, configuraciones = resultados_hilo(configuraciones, df_tl_or, diccionario)
+    return df_tl_or, configuraciones
 
 
 def hilo_tl(
@@ -182,7 +280,13 @@ def hilo_tl(
         preprocesado=prueba,
     )
 
-    return df_tl, nombre_dicc_cnn, prueba, config, modelo
+    return {
+        "dataframe": df_tl,
+        "nombre_dicc_cnn": nombre_dicc_cnn,
+        "prueba": prueba,
+        "config": config,
+        "modelo": modelo,
+    }
 
 
 def seleccion_mejor_configuracion(df_mini_pp):

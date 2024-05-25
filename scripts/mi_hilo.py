@@ -6,7 +6,7 @@ import pandas as pd
 
 
 def f(X, Y):
-    return pd.DataFrame({"a": [X, X, X], "b": [Y, Y, Y]}), "hola"
+    return pd.DataFrame({"a": [X], "b": [Y]}), "hola"
 
 
 class MiHilo(Thread):
@@ -51,10 +51,12 @@ def m2():
     neuronas = [1, 2, 3, 4]
     capas = [5, 6, 7, 8]
     futures = []
+
     with ThreadPoolExecutor(max_workers=4) as pool:
-        for n in neuronas:
-            for c in capas:
-                futures.append(pool.submit(f, n, c))
+        for i in range(2):
+            for n in neuronas:
+                for c in capas:
+                    futures.append(pool.submit(f, n, c))
         results = [f.result() for f in futures]
 
     df = pd.DataFrame()
@@ -65,13 +67,15 @@ def m2():
 
 
 def m3():
-    neuronas = [1, 2, 3, 4]
+    neuronas = [1, 2, 3, 4] 
+    capas = [1, 2, 3, 4] 
+
     with ThreadPoolExecutor(max_workers=4) as pool:
-        results = list(pool.map(f, neuronas, [i + 1 for i in neuronas]))
+        results = list(pool.map(f, neuronas, capas))
 
     df = pd.DataFrame()
     for result in results:
-        df = pd.concat([df, pd.DataFrame(result)], join="outer", axis=0, ignore_index=True)
+        df = pd.concat([df, pd.DataFrame(result[0])], join="outer", axis=0, ignore_index=True)
     print(df)
 
 
