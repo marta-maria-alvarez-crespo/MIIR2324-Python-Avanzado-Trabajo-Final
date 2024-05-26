@@ -14,7 +14,13 @@ import pstats
 
 
 def main():
-
+    '''Función principal del programa.
+    
+    Esta función carga la configuración desde el archivo "configuracion.json" y el dataset desde los archivos de imágenes y etiquetas filtradas.
+    Luego realiza la división de los datos de entrada en conjuntos de entrenamiento y validación.
+    A continuación, ejecuta los experimentos de Transfer Learning configurados y compara los resultados para seleccionar la mejor red y configuración.
+    Finalmente, realiza la experimentación de Fine Tunning con los parámetros óptimos y almacena los resultados en un dataframe.
+    '''
     configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
     # Carga del dataset
@@ -50,10 +56,13 @@ def main():
 
 
 if __name__ == "__main__":
+    # Se ejecuta el programa principal y se mide el tiempo de ejecución de cada función con cProfile
     cProfile.run("main()", filename="output.pstats", sort="cumulative")
-
+    
+    # Se guardan los resultados en un archivo .pstats
     stats = pstats.Stats("output.pstats")
 
+    # Se almacenan los datos de tiempo de ejecución en un dataframe
     stats_data = []
     for func, (cc, nc, tt, ct, callers) in stats.stats.items():
         filename, line, funcname = func
@@ -70,7 +79,8 @@ if __name__ == "__main__":
         )
 
     df = pd.DataFrame(stats_data)
-
+    
+    # Se almacena el dataframe en un archivo .xlsx
     dir_path = os.path.dirname(os.path.abspath(__file__))
     resultados_path = os.path.join(dir_path, "../Medicion_de_tiempos")
     if not os.path.exists(resultados_path):

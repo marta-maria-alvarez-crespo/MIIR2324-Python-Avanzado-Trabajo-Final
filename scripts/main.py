@@ -34,14 +34,14 @@ def medicion_de_tiempos(
     :type target_entrenamiento: numpy.ndarray
     :param target_test: Objetivos de prueba.
     :type target_test: numpy.ndarray
-    :param min_w: _description_, defaults to 2
-    :type min_w: int, optional
-    :param max_w: _description_, defaults to 16
-    :type max_w: int, optional
-    :param repeticiones: _description_, defaults to 10
-    :type repeticiones: int, optional
-    :return: _description_
-    :rtype: _type_
+    :param min_w: Número mínimo de workers, por defecto es 2.
+    :type min_w: int, opcional
+    :param max_w: Número máximo de workers, por defecto es 8.
+    :type max_w: int, opcional
+    :param repeticiones: Número de repeticiones, por defecto es 10.
+    :type repeticiones: int, opcional
+    :return: Una tupla que contiene el tiempo y las etiquetas.
+    :rtype: tuple
     """
     v = 0
     tiempo = []
@@ -109,9 +109,9 @@ def medicion_de_tiempos(
 def generacion_grafica_comparativa(tiempo, labels):
     """Recoge los resultados obtenidos tras la ejecución del estudio temporal y genera una gráfica comparativa
 
-    :param tiempo: _description_
+    :param tiempo: Lista de tiempos de ejecución para cada tipo de ejecución
     :type tiempo: list
-    :param labels: _description_
+    :param labels: Lista de etiquetas para cada tipo de ejecución
     :type labels: list
     """
     plt.figure(figsize=(30, 8))
@@ -129,7 +129,14 @@ def generacion_grafica_comparativa(tiempo, labels):
 
 
 def main():
+    """
+    Función principal del programa.
 
+    Carga el dataset, realiza la preparación de los datos de entrada, mide los tiempos de ejecución de los experimentos
+    de Transfer Learning, genera una gráfica comparativa, ejecuta los experimentos de Transfer Learning, selecciona la mejor
+    red y configuración, realiza la experimentación de Fine Tunning y almacena los resultados en un dataframe.
+    """
+    
     # Carga del dataset
     im_filtradas, et_filtradas = funciones_datos.cargar_dataset()
 
@@ -158,20 +165,20 @@ def main():
 
     generacion_grafica_comparativa(tiempo, labels)
 
-    # # Ejecución de los experimentos de Transfer Learning configurados
-    # configuraciones, df_or, df_norm, df_preprocesado = fnc.ejecuta_experimentos_transfer_learning(
-    #     et_filtradas=et_filtradas,
-    #     pred_entrenamiento_or=pred_entrenamiento_or,
-    #     pred_test_or=pred_test_or,
-    #     target_entrenamiento=target_entrenamiento,
-    #     target_test=target_test,
-    # )
+    # Ejecución de los experimentos de Transfer Learning configurados
+    configuraciones, df_or, df_norm, df_preprocesado = fnc.ejecuta_experimentos_transfer_learning(
+        et_filtradas=et_filtradas,
+        pred_entrenamiento_or=pred_entrenamiento_or,
+        pred_test_or=pred_test_or,
+        target_entrenamiento=target_entrenamiento,
+        target_test=target_test,
+    )
 
-    # # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
-    # nombre_cnn, nombre_top, clave_cnn = fnc.selecciona_mejor_cnn(df_or, df_norm, df_preprocesado)
+    # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
+    nombre_cnn, nombre_top, clave_cnn = fnc.selecciona_mejor_cnn(df_or, df_norm, df_preprocesado)
 
-    # # Experimentación de Fine Tunning con los parámetros óptimos y almacenamiento de los resultados en un dataframe
-    # fnc.ejecuta_fine_tunning_mejor_cnn(im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
+    # Experimentación de Fine Tunning con los parámetros óptimos y almacenamiento de los resultados en un dataframe
+    fnc.ejecuta_fine_tunning_mejor_cnn(im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
 
 
 if __name__ == "__main__":

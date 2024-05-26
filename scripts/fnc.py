@@ -9,7 +9,7 @@ import json
 import deep_learning
 import funciones_datos
 import pandas as pd
-from mi_hilo import MiHilo
+from mi_hilo import MiHilo, MiProceso
 from multiprocess import Queue
 from tensorflow.keras import optimizers
 from pathos.multiprocessing import ProcessPool
@@ -28,9 +28,9 @@ def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
     """Divide los datos de entrada en conjuntos de entrenamiento y prueba y aplica data augmentation a las imágenes de entrenamiento.
 
     :param im_filtradas: Imágenes filtradas.
-    :type im_filtradas: numpy.ndarray
+    :type im_filtradas: list
     :param et_filtradas: Etiquetas filtradas.
-    :type et_filtradas: numpy.ndarray
+    :type et_filtradas: list
     :return: Tupla que contiene los conjuntos de entrenamiento y prueba de las imágenes filtradas y las etiquetas filtradas.
     :rtype: tuple
     """
@@ -52,11 +52,11 @@ def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
         target_test,
     )
 
-
+# TODO quitar la v de la función para la entrega final
 def ejecuta_experimentos_transfer_learning(
     et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v, mw
 ):
-    """Realiza experimentos de Transfer Learning utilizando los parámetros establecidos y almacena los resultados en un dataframe.
+    '''Ejecuta experimentos de Transfer Learning utilizando los parámetros proporcionados y almacena los resultados en un dataframe.
 
     :param et_filtradas: Lista de etiquetas filtradas.
     :type et_filtradas: list
@@ -68,9 +68,13 @@ def ejecuta_experimentos_transfer_learning(
     :type target_entrenamiento: numpy.ndarray
     :param target_test: Objetivos de prueba.
     :type target_test: numpy.ndarray
-    :return: Un diccionario con las configuraciones y tres dataframes con los resultados.
+    # :param v: Lista de valores booleanos para seleccionar el método de ejecución.
+    # :type v: list
+    :param mw: Valor para el número máximo de hilos de ejecución para multihilo_pool_executor.
+    :type mw: int
+    :return: Un diccionario de configuraciones, y tres dataframes con los resultados.
     :rtype: tuple
-    """
+    '''    
 
     configuraciones = {
         "mn": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}},
@@ -92,6 +96,10 @@ def ejecuta_experimentos_transfer_learning(
     #     )
     # elif configuracion["ejecucion"]["multiproceso_pool_executor"]:
     #     df_tl_or, configuraciones = multiproceso_pool_executor(
+    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+    #     )
+    # elif configuracion["ejecucion"]["multiproceso_clase_process"]:
+    #     df_tl_or, configuraciones = multiproceso_clase_process(
     #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
     #     )
     
@@ -132,6 +140,28 @@ def ejecuta_experimentos_transfer_learning(
 def multihilo_clase_thread(
     et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
 ):
+    '''Ejecuta el entrenamiento de una red neuronal en múltiples hilos.
+
+    Este método recibe los datos de entrada necesarios para entrenar una red neuronal en múltiples configuraciones.
+    Cada configuración consiste en una combinación de modelos de redes neuronales pre-entrenadas y parámetros de la capa superior.
+    El método crea hilos para cada configuración y ejecuta el entrenamiento de la red neuronal en paralelo.
+    Al finalizar, se obtienen los resultados de cada hilo y se devuelve un dataframe con los resultados obtenidos.
+
+    :param et_filtradas: Lista de etiquetas filtradas.
+    :type et_filtradas: list
+    :param pred_entrenamiento_or: Predicciones de entrenamiento originales.
+    :type pred_entrenamiento_or: numpy.ndarray
+    :param pred_test_or: Predicciones de prueba originales.
+    :type pred_test_or: numpy.ndarray
+    :param target_entrenamiento: Etiquetas de entrenamiento.
+    :type target_entrenamiento: numpy.ndarray
+    :param target_test: Etiquetas de prueba.
+    :type target_test: numpy.ndarray
+    :param configuraciones: Configuraciones de modelos y parámetros de la capa superior.
+    :type configuraciones: diccionario
+    :return: Un dataframe con los resultados obtenidos en el entrenamiento de la red neuronal y las configuraciones utilizadas.
+    :rtype: pandas.DataFrame, dict
+    '''    
     hilos = []
     for n_cnn, pruebas in configuraciones.items():
         cnn = cnn_preentrenadas[n_cnn](pred_entrenamiento_or.shape[1:])
@@ -180,6 +210,29 @@ def multihilo_clase_thread(
 def multihilo_pool_executor(
     et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones, mw
 ):
+    '''Ejecuta con múltiples hilos utilizando ThreadPoolExecutor.
+
+    Este método ejecuta múltiples hilos utilizando ThreadPoolExecutor para entrenar redes neuronales convolucionales
+    con diferentes configuraciones. Toma como entrada los datos de entrenamiento y prueba, las configuraciones de las
+    redes neuronales, y el número máximo de trabajadores (hilos) a utilizar.
+
+    :param et_filtradas: Lista de etiquetas filtradas.
+    :type et_filtradas: list
+    :param pred_entrenamiento_or: Predicciones de entrenamiento originales.
+    :type pred_entrenamiento_or: numpy.ndarray
+    :param pred_test_or: Predicciones de prueba originales.
+    :type pred_test_or: numpy.ndarray
+    :param target_entrenamiento: Objetivos de entrenamiento.
+    :type target_entrenamiento: numpy.ndarray
+    :param target_test: Objetivos de prueba.
+    :type target_test: numpy.ndarray
+    :param configuraciones: Configuraciones de las redes neuronales.
+    :type configuraciones: dict
+    :param mw: Número máximo de trabajadores (hilos) a utilizar.
+    :type mw: int
+    :return: Un DataFrame con los resultados de las redes neuronales y las configuraciones actualizadas.
+    :rtype: pandas.DataFrame, dict
+    '''    
     futures = []
     with ThreadPoolExecutor(max_workers=mw) as pool:
         for n_cnn, pruebas in configuraciones.items():
@@ -220,7 +273,23 @@ def multihilo_pool_executor(
 
 
 def multiproceso_pool_executor(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones):
-    # Experimentación de Transfer Learning con los parámetros establecidos y almacenamiento de los resultados en el dataframe creado
+    '''Ejecuta el proceso de entrenamiento de una red neuronal convolucional utilizando multiprocessing.
+
+    :param et_filtradas: Lista de etiquetas filtradas.
+    :type et_filtradas: list
+    :param pred_entrenamiento_or: Matriz de predictores de entrenamiento originales.
+    :type pred_entrenamiento_or: numpy.ndarray
+    :param pred_test_or: Matriz de predictores de prueba originales.
+    :type pred_test_or: numpy.ndarray
+    :param target_entrenamiento: Vector de etiquetas de entrenamiento.
+    :type target_entrenamiento: numpy.ndarray
+    :param target_test: Vector de etiquetas de prueba.
+    :type target_test: numpy.ndarray
+    :param configuraciones: Diccionario de configuraciones de la red neuronal.
+    :type configuraciones: dict
+    :return: DataFrame con los resultados de la red neuronal y el diccionario de configuraciones actualizado.
+    :rtype: pandas.DataFrame, dict
+    '''    
     with ProcessPool() as pool:
         results = []
         for n_cnn, pruebas in configuraciones.items():
@@ -261,7 +330,95 @@ def multiproceso_pool_executor(et_filtradas, pred_entrenamiento_or, pred_test_or
             df_tl_or, configuraciones = obtener_resultados(configuraciones, df_tl_or, diccionario)
     return df_tl_or, configuraciones
 
+def multiproceso_clase_process(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones):
+    '''Ejecuta el proceso de entrenamiento de redes neuronales en paralelo utilizando multiprocessing.
+
+    :param et_filtradas: Lista de etiquetas filtradas.
+    :type et_filtradas: list
+    :param pred_entrenamiento_or: Predicciones de entrenamiento originales.
+    :type pred_entrenamiento_or: numpy.ndarray
+    :param pred_test_or: Predicciones de prueba originales.
+    :type pred_test_or: numpy.ndarray
+    :param target_entrenamiento: Etiquetas de entrenamiento.
+    :type target_entrenamiento: numpy.ndarray
+    :param target_test: Etiquetas de prueba.
+    :type target_test: numpy.ndarray
+    :param configuraciones: Diccionario de configuraciones de las redes neuronales.
+    :type configuraciones: dict
+    :return: Un dataframe con los resultados obtenidos en Transfer Learning y el diccionario de configuraciones actualizado.
+    :rtype: pandas.DataFrame, dict
+    '''    
+    queue = Queue()
+    procesos = []
+    for n_cnn, pruebas in configuraciones.items():
+        cnn = cnn_preentrenadas[n_cnn](pred_entrenamiento_or.shape[1:])
+        for prueba in pruebas.keys():
+            prueba_mas_cnn = prueba + '_' + n_cnn
+            predictores_train = imagenes_preprocesadas[prueba_mas_cnn](pred_entrenamiento_or, prueba_mas_cnn)
+            predictores_train = funciones_datos.cnn_predict(
+                predictores_train, "entrenamiento", cnn, n_cnn
+            )
+            predictores_test = imagenes_preprocesadas[prueba_mas_cnn](pred_test_or, prueba_mas_cnn)
+            predictores_test = funciones_datos.cnn_predict(
+                predictores_test, "validacion", cnn, n_cnn
+            )
+            
+            for neurona in configuracion["parametros_top"]["neuronas"]:
+                for dropout in configuracion["parametros_top"]["dropouts"]:
+                    for activacion in configuracion["parametros_top"]["activaciones"]:
+                        for capa in configuracion["parametros_top"]["capas"]:
+                            proceso = MiProceso( 
+                                target=entrenar_red,
+                                args=(
+                                    et_filtradas,
+                                    target_entrenamiento,
+                                    target_test,
+                                    n_cnn,
+                                    predictores_train,
+                                    predictores_test,
+                                    neurona,
+                                    dropout,
+                                    activacion,
+                                    capa,
+                                    configuracion["parametros_top"]["transfer_learning"]["max_epoch"],
+                                    prueba
+                                ),
+                                queue= queue 
+                            )
+                            proceso.start()
+                            procesos.append(proceso)
+
+    for proceso in procesos:
+        proceso.join()
+    
+    # Creación de un dataframe con los resultados obtenidos en Transfer Learning
+    df_tl_or = pd.DataFrame()
+
+    while not queue.empty():
+        diccionario = queue.get()
+        configuraciones[diccionario["nombre_dicc_cnn"]][diccionario["prueba"]][diccionario["config"]] = diccionario["modelo"]
+        df_tl_or, configuraciones = obtener_resultados(configuraciones, df_tl_or, diccionario)
+    
+    return df_tl_or, configuraciones
+
 def secuencial(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones):
+    '''Ejecuta el proceso secuencial para entrenar y evaluar una red neuronal convolucional.
+
+    :param et_filtradas: Lista de etiquetas filtradas.
+    :type et_filtradas: list
+    :param pred_entrenamiento_or: Predicciones de entrenamiento originales.
+    :type pred_entrenamiento_or: numpy.ndarray
+    :param pred_test_or: Predicciones de prueba originales.
+    :type pred_test_or: numpy.ndarray
+    :param target_entrenamiento: Etiquetas de entrenamiento.
+    :type target_entrenamiento: numpy.ndarray
+    :param target_test: Etiquetas de prueba.
+    :type target_test: numpy.ndarray
+    :param configuraciones: Diccionario de configuraciones de la red neuronal.
+    :type configuraciones: dict
+    :return: DataFrame con los resultados de entrenamiento y evaluación de la red neuronal, y el diccionario de configuraciones actualizado.
+    :rtype: pandas.DataFrame, dict
+    '''    
     df_tl_or = pd.DataFrame()
 
     for n_cnn, pruebas in configuraciones.items():
@@ -296,6 +453,17 @@ def secuencial(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrena
 
 
 def obtener_resultados(configuraciones, df_tl_or, diccionario):
+    '''Obtiene los resultados de las configuraciones y los agrega al diccionario y al dataframe.
+
+    :param configuraciones: Diccionario de configuraciones.
+    :type configuraciones: dict
+    :param df_tl_or: DataFrame original.
+    :type df_tl_or: pandas.DataFrame
+    :param diccionario: Diccionario con los resultados.
+    :type diccionario: dict
+    :return: DataFrame actualizado y diccionario actualizado.
+    :rtype: pandas.DataFrame, dict
+    '''    
     configuraciones[diccionario["nombre_dicc_cnn"]][diccionario["prueba"]][diccionario["config"]] = diccionario[
         "modelo"
     ]
@@ -321,6 +489,36 @@ def entrenar_red(
     max_epoch_tl: int,
     prueba: str,
 ):
+    '''Entrena una red neuronal utilizando el proceso de Transfer Learning.
+
+    :param et_filtradas: Lista de características filtradas.
+    :type et_filtradas: list
+    :param target_entrenamiento: Lista de etiquetas de entrenamiento.
+    :type target_entrenamiento: list
+    :param target_test: Lista de etiquetas de prueba.
+    :type target_test: list
+    :param nombre_dicc_cnn: Nombre del diccionario de la CNN.
+    :type nombre_dicc_cnn: str
+    :param pred_entrenamiento: Lista de predicciones de entrenamiento.
+    :type pred_entrenamiento: list
+    :param pred_test: Lista de predicciones de prueba.
+    :type pred_test: list
+    :param neurona: Número de neuronas en la capa oculta.
+    :type neurona: int
+    :param dropout: Valor de dropout para regularización.
+    :type dropout: float
+    :param activacion: Función de activación para la capa oculta.
+    :type activacion: str
+    :param capa: Número de capas ocultas.
+    :type capa: int
+    :param max_epoch_tl: Número máximo de épocas para el proceso de Transfer Learning.
+    :type max_epoch_tl: int
+    :param prueba: Nombre de la prueba.
+    :type prueba: str
+    :return: Un diccionario que contiene el dataframe resultante, el nombre del diccionario de la CNN,
+             el nombre de la prueba, la configuración y el modelo.
+    :rtype: dict
+    '''    
     # Creación de un dataframe vacío
     df_tl = pd.DataFrame()
 
