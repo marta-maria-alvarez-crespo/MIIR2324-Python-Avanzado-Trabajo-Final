@@ -1,3 +1,4 @@
+
 {
     "cargar_dataset": {
         "dataset": "dataset/Galaxy10_DECals.h5",
@@ -10,24 +11,24 @@
 
     "parametros_top": {
         "neuronas": [
-            1, 2
+            1, 2, 3
         ],
         "capas": [
-            1
+            1, 2
         ],
         "dropouts": [
-            0.0
+            0.0, 0.1
         ],
         "activaciones": [
-            "linear"
+            "linear", "relu"
         ],
         "batch_size": 32,
         "transfer_learning": {
-            "max_epoch": 100,
+            "max_epoch": 50,
             "learning_rate": 0.1
         },
         "fine_tunning": {
-            "max_epoch": 50,
+            "max_epoch": 100,
             "learning_rate": 0.001
         },
         "test_size": 0.2,
@@ -44,3 +45,5 @@
         "sigma": 4
     }
 }
+
+

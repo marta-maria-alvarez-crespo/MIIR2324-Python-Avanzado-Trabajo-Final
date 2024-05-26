@@ -21,7 +21,7 @@ def medicion_de_tiempos(
     target_entrenamiento,
     target_test,
     min_w=2,
-    max_w=16,
+    max_w=8,
     repeticiones=10,
 ):
     """Función que permite la experimentación con varios hilos o procesos (por implementar) y la obtención de un estudio estadístico sencillo
@@ -103,8 +103,8 @@ def medicion_de_tiempos(
     if not os.path.exists(resultados_path):
         os.makedirs(resultados_path)
 
-    df.to_excel(os.path.join(resultados_path, "medicion_de_tiempos.xlsx"))
-    df_agregado.to_excel(os.path.join(resultados_path, "estudio_estadistico.xlsx"))
+    df.to_excel(os.path.join(resultados_path, "medicion_de_tiempos_2.xlsx"))
+    df_agregado.to_excel(os.path.join(resultados_path, "estudio_estadistico_2.xlsx"))
     return tiempo, labels
 
 
@@ -116,9 +116,9 @@ def generacion_grafica_comparativa(tiempo, labels):
     :param labels: _description_
     :type labels: list
     """
-    plt.figure(figsize=(20, 8))
+    plt.figure(figsize=(30, 8))
     plt.bar(labels, tiempo)
-    plt.xticks(rotation=25)
+    plt.xticks(rotation=25, fontsize=8)
     plt.xlabel("Tipo de Ejecución")
     plt.ylabel("Tiempo de Ejecución (s)")
 
@@ -127,7 +127,7 @@ def generacion_grafica_comparativa(tiempo, labels):
     if not os.path.exists(resultados_path):
         os.makedirs(resultados_path)
 
-    plt.savefig(os.path.join(resultados_path, "grafica.png"))
+    plt.savefig(os.path.join(resultados_path, "grafica_2.png"))
 
 
 def main():
@@ -135,8 +135,8 @@ def main():
     # Carga del dataset
     im_filtradas, et_filtradas = funciones_datos.cargar_dataset()
 
-    im_filtradas = np.concatenate((im_filtradas[:50], im_filtradas[-50:]))
-    et_filtradas = np.concatenate((et_filtradas[:50], et_filtradas[-50:]))
+    im_filtradas = np.concatenate((im_filtradas[:150], im_filtradas[2000:2150], im_filtradas[-150:]))
+    et_filtradas = np.concatenate((et_filtradas[:150], et_filtradas[2000:2150], et_filtradas[-150:]))
 
     # División de los datos de entrada en conjuntos de entrenamiento y validación
     (
