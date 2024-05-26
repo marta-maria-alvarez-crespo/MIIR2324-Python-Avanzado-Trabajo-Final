@@ -7,33 +7,66 @@
 import pandas as pd
 from threading import Thread
 from multiprocessing import Process
-from concurrent.futures import ThreadPoolExecutor
-
-
-def f(X, Y):
-    return pd.DataFrame({"a": [X], "b": [Y]}), "hola"
 
 
 class MiHilo(Thread):
+    """Representa un hilo personalizado que hereda de la clase Thread.
+
+    :param target: La función objetivo que se ejecutará en el hilo.
+    :type target: function
+    :param args: Los argumentos que se pasarán a la función objetivo.
+    :type args: tuple
+    """
+
     def __init__(self, target, args):
         super().__init__(target=target, args=args)
 
     def run(self):
+        """Ejecuta el hilo y guarda el resultado en la variable result.
+
+        Este método se encarga de ejecutar el hilo y guardar el resultado en la variable result.
+        El resultado se obtiene al llamar al método objetivo (_target) pasando los argumentos (_args) correspondientes.
+        """
         self.result = self._target(*self._args)
 
     def get_result(self):
+        """Obtiene el resultado del hilo.
+
+        :return: El resultado del hilo.
+        :rtype: object
+        """
         return self.result
 
 
 class MiProceso(Process):
+    """Representa un proceso personalizado que hereda de la clase Process."""
+
     def __init__(self, target, args, queue):
+        """Inicializa una instancia de la clase MiProceso.
+
+        :param target: El objetivo de la función que se ejecutará en el proceso.
+        :type target: function
+        :param args: Los argumentos que se pasarán a la función objetivo.
+        :type args: tuple
+        :param queue: La cola en la que se almacenarán los resultados de la función objetivo.
+        :type queue: Queue
+        """
         super().__init__(target=target, args=args)
         self.queue = queue
 
     def run(self):
+        """Ejecuta el proceso y coloca el resultado en la cola.
+
+        Este método se ejecuta cuando se inicia el proceso y se encarga de llamar al objetivo del proceso (_target)
+        pasándole los argumentos (_args). Luego, coloca el resultado en la cola (queue) para que pueda ser
+        recuperado por el proceso principal.
+        """
         result = self._target(*self._args)
         self.queue.put(result)
 
+
+# def f(X, Y):
+#     return pd.DataFrame({"a": [X], "b": [Y]}), "hola"
 
 # def m():
 #     hilos = []
@@ -72,8 +105,8 @@ class MiProceso(Process):
 
 
 # def m3():
-#     neuronas = [1, 2, 3, 4] 
-#     capas = [1, 2, 3, 4] 
+#     neuronas = [1, 2, 3, 4]
+#     capas = [1, 2, 3, 4]
 
 #     with ThreadPoolExecutor(max_workers=4) as pool:
 #         results = list(pool.map(f, neuronas, capas))

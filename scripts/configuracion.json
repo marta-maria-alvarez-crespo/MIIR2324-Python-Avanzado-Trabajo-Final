@@ -38,7 +38,9 @@
     "ejecucion": {
         "secuencial": false,
         "multihilo_clase_thread": false,
-        "multihilo_pool_executor": true
+        "multihilo_pool_executor": true,
+        "multiproceso_pool_executor": false,
+        "multiproceso_clase_process": false
     },
 
     "preprocesamiento": {
