@@ -15,9 +15,8 @@ Contents
 
    deep_learning
    preprocesado
-   prueba
    main
-   mi_hilo
+   preprocesado_paralelo
    utilidades
    funciones_datos
    fnc
