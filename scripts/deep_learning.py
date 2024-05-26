@@ -6,7 +6,6 @@
 import utilidades
 import numpy as np
 import pandas as pd
-import funciones_datos
 import matplotlib.pyplot as plt
 from itertools import cycle
 from tensorflow import keras

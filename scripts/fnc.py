@@ -10,7 +10,9 @@ import deep_learning
 import funciones_datos
 import pandas as pd
 from mi_hilo import MiHilo
+from multiprocess import Queue
 from tensorflow.keras import optimizers
+from pathos.multiprocessing import ProcessPool
 from preprocesado import imagenes_preprocesadas
 from concurrent.futures import ThreadPoolExecutor
 from sklearn.model_selection import train_test_split
@@ -88,6 +90,11 @@ def ejecuta_experimentos_transfer_learning(
     #     df_tl_or, configuraciones = secuencial(
     #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
     #     )
+    # elif configuracion["ejecucion"]["multiproceso_pool_executor"]:
+    #     df_tl_or, configuraciones = multiproceso_pool_executor(
+    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+    #     )
+    
 
     # Experimentación de Transfer Learning con los parámetros establecidos y almacenamiento de los resultados en el dataframe creado
     if v[0]:
@@ -140,7 +147,7 @@ def multihilo_clase_thread(
                     for activacion in configuracion["parametros_top"]["activaciones"]:
                         for capa in configuracion["parametros_top"]["capas"]:
                             hilo = MiHilo(
-                                target=hilo_tl,
+                                target=entrenar_red,
                                 args=(
                                     et_filtradas,
                                     target_entrenamiento,
@@ -166,7 +173,7 @@ def multihilo_clase_thread(
     df_tl_or = pd.DataFrame()
     for hilo in hilos:
         diccionario = hilo.get_result()
-        df_tl_or, configuraciones = resultados_hilo(configuraciones, df_tl_or, diccionario)
+        df_tl_or, configuraciones = obtener_resultados(configuraciones, df_tl_or, diccionario)
     return df_tl_or, configuraciones
 
 
@@ -189,7 +196,7 @@ def multihilo_pool_executor(
                             for capa in configuracion["parametros_top"]["capas"]:
                                 futures.append(
                                     pool.submit(
-                                        hilo_tl,
+                                        entrenar_red,
                                         et_filtradas,
                                         target_entrenamiento,
                                         target_test,
@@ -208,21 +215,51 @@ def multihilo_pool_executor(
 
     df_tl_or = pd.DataFrame()
     for result in results:
-        df_tl_or, configuraciones = resultados_hilo(configuraciones, df_tl_or, result)
+        df_tl_or, configuraciones = obtener_resultados(configuraciones, df_tl_or, result)
     return df_tl_or, configuraciones
 
 
-def resultados_hilo(configuraciones, df_tl_or, diccionario):
-    configuraciones[diccionario["nombre_dicc_cnn"]][diccionario["prueba"]][diccionario["config"]] = diccionario[
-        "modelo"
-    ]
-    # Si el dataframe está vacío, se asigna el mini_df_tl, si no, se concatenan ambos dataframes
-    if len(df_tl_or) == 0:
-        df_tl_or = diccionario["dataframe"]
-    else:
-        df_tl_or = pd.concat([df_tl_or, diccionario["dataframe"]], join="outer", axis=0, ignore_index=True)
+def multiproceso_pool_executor(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones):
+    # Experimentación de Transfer Learning con los parámetros establecidos y almacenamiento de los resultados en el dataframe creado
+    with ProcessPool() as pool:
+        results = []
+        for n_cnn, pruebas in configuraciones.items():
+            cnn = cnn_preentrenadas[n_cnn](pred_entrenamiento_or.shape[1:])
+            for prueba in pruebas.keys():
+                prueba_mas_cnn = prueba + '_' + n_cnn
+                predictores_train = imagenes_preprocesadas[prueba_mas_cnn](pred_entrenamiento_or, prueba_mas_cnn)
+                predictores_train = funciones_datos.cnn_predict(
+                    predictores_train, "entrenamiento", cnn, n_cnn
+                )
+                predictores_test = imagenes_preprocesadas[prueba_mas_cnn](pred_test_or, prueba_mas_cnn)
+                predictores_test = funciones_datos.cnn_predict(
+                    predictores_test, "validacion", cnn, n_cnn
+                )
+                
+                for neurona in configuracion["parametros_top"]["neuronas"]:
+                    for dropout in configuracion["parametros_top"]["dropouts"]:
+                        for activacion in configuracion["parametros_top"]["activaciones"]:
+                            for capa in configuracion["parametros_top"]["capas"]:
+                                result = pool.apipe(entrenar_red, 
+                                    et_filtradas,
+                                    target_entrenamiento,
+                                    target_test,
+                                    n_cnn,
+                                    predictores_train,
+                                    predictores_test,
+                                    neurona,
+                                    dropout,
+                                    activacion,
+                                    capa,
+                                    configuracion["parametros_top"]["transfer_learning"]["max_epoch"],
+                                    prueba)
+                                results.append(result)
+                                
+        df_tl_or = pd.DataFrame()
+        for result in results:
+            diccionario = result.get()
+            df_tl_or, configuraciones = obtener_resultados(configuraciones, df_tl_or, diccionario)
     return df_tl_or, configuraciones
-
 
 def secuencial(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones):
     df_tl_or = pd.DataFrame()
@@ -240,7 +277,7 @@ def secuencial(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrena
                 for dropout in configuracion["parametros_top"]["dropouts"]:
                     for activacion in configuracion["parametros_top"]["activaciones"]:
                         for capa in configuracion["parametros_top"]["capas"]:
-                            diccionario = hilo_tl(
+                            diccionario = entrenar_red(
                                 et_filtradas,
                                 target_entrenamiento,
                                 target_test,
@@ -254,11 +291,23 @@ def secuencial(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrena
                                 configuracion["parametros_top"]["transfer_learning"]["max_epoch"],
                                 prueba,
                             )
-                            df_tl_or, configuraciones = resultados_hilo(configuraciones, df_tl_or, diccionario)
+                            df_tl_or, configuraciones = obtener_resultados(configuraciones, df_tl_or, diccionario)
     return df_tl_or, configuraciones
 
 
-def hilo_tl(
+def obtener_resultados(configuraciones, df_tl_or, diccionario):
+    configuraciones[diccionario["nombre_dicc_cnn"]][diccionario["prueba"]][diccionario["config"]] = diccionario[
+        "modelo"
+    ]
+    # Si el dataframe está vacío, se asigna el mini_df_tl, si no, se concatenan ambos dataframes
+    if len(df_tl_or) == 0:
+        df_tl_or = diccionario["dataframe"]
+    else:
+        df_tl_or = pd.concat([df_tl_or, diccionario["dataframe"]], join="outer", axis=0, ignore_index=True)
+    return df_tl_or, configuraciones
+
+
+def entrenar_red(
     et_filtradas: list,
     target_entrenamiento: list,
     target_test: list,
