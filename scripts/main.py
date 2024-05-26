@@ -4,9 +4,7 @@
 # GitHub: www.github.com/marta-maria-alvarez-crespo/MIIR2324-Python-Avanzado-Trabajo-Final
 
 import os
-import json
 import fnc
-import utilidades
 import funciones_datos
 import numpy as np
 import pandas as pd
