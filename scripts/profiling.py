@@ -31,7 +31,6 @@ def main():
         target_test,
     ) = fnc.division_preparacion_datos_entrada(im_filtradas=im_filtradas, et_filtradas=et_filtradas)
 
-    
     # Ejecución de los experimentos de Transfer Learning configurados
     configuraciones, df_or, df_norm, df_preprocesado = fnc.ejecuta_experimentos_transfer_learning(
         et_filtradas=et_filtradas,
@@ -40,14 +39,14 @@ def main():
         target_entrenamiento=target_entrenamiento,
         target_test=target_test,
         v=[0, 1, 0],
-        mw=4
+        mw=4,
     )
 
-    # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
-    nombre_cnn, nombre_top, clave_cnn = fnc.selecciona_mejor_cnn(df_or, df_norm, df_preprocesado)
+    # # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
+    # nombre_cnn, nombre_top, clave_cnn = fnc.selecciona_mejor_cnn(df_or, df_norm, df_preprocesado)
 
-    # Experimentación de Fine Tunning con los parámetros óptimos y almacenamiento de los resultados en un dataframe
-    fnc.ejecuta_fine_tunning_mejor_cnn(im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
+    # # Experimentación de Fine Tunning con los parámetros óptimos y almacenamiento de los resultados en un dataframe
+    # fnc.ejecuta_fine_tunning_mejor_cnn(im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
 
 
 if __name__ == "__main__":
@@ -59,7 +58,15 @@ if __name__ == "__main__":
     for func, (cc, nc, tt, ct, callers) in stats.stats.items():
         filename, line, funcname = func
         stats_data.append(
-            {"filename": filename, "line": line, "funcname": funcname, "cc": cc, "nc": nc, "tt": tt, "ct": ct}
+            {
+                "filename": filename,
+                "line": line,
+                "funcname": funcname,
+                "callcount": cc,
+                "non-recursive call count": nc,
+                "total time": tt,
+                "cumtime": ct,
+            }
         )
 
     df = pd.DataFrame(stats_data)

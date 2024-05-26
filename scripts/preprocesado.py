@@ -1,4 +1,4 @@
-# Autora:  Marta María Álvarez Crespo 
+# Autora:  Marta María Álvarez Crespo
 # Descripción:  Archivo con las funciones principales de tratamiento de las imágenes para realizar la experimentación
 # Última modificación: 25 / 03 / 2024
 # GitHub: www.github.com/marta-maria-alvarez-crespo/MIIR2324-Python-Avanzado-Trabajo-Final
