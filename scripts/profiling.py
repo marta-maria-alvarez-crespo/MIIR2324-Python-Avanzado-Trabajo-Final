@@ -42,11 +42,11 @@ def main():
         mw=4,
     )
 
-    # # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
-    # nombre_cnn, nombre_top, clave_cnn = fnc.selecciona_mejor_cnn(df_or, df_norm, df_preprocesado)
+    # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
+    nombre_cnn, nombre_top, clave_cnn = fnc.selecciona_mejor_cnn(df_or, df_norm, df_preprocesado)
 
-    # # Experimentación de Fine Tunning con los parámetros óptimos y almacenamiento de los resultados en un dataframe
-    # fnc.ejecuta_fine_tunning_mejor_cnn(im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
+    # Experimentación de Fine Tunning con los parámetros óptimos y almacenamiento de los resultados en un dataframe
+    fnc.ejecuta_fine_tunning_mejor_cnn(im_filtradas, et_filtradas, nombre_cnn, configuraciones, nombre_top, clave_cnn)
 
 
 if __name__ == "__main__":
