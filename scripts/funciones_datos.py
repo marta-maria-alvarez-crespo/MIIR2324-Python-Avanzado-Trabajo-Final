@@ -10,7 +10,6 @@ import h5py
 import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
-from sklearn.preprocessing import OneHotEncoder
 
 configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
@@ -35,13 +34,6 @@ def cargar_dataset():
     # Selección de las filas
     imagenes_filtradas = imagenes[indices_clases_utilizadas]
     etiquetas_filtradas = etiquetas[indices_clases_utilizadas]
-
-    # # Codificación One Hot de las clases
-    # OHE = OneHotEncoder()
-    # etiquetas_filtradas = OHE.fit_transform(etiquetas_filtradas)
-    # # Codificación One Hot de las clases
-    # OHE = OneHotEncoder()
-    # etiquetas_filtradas = OHE.fit_transform(etiquetas_filtradas)
 
     target = []
     for etiqueta in etiquetas_filtradas:

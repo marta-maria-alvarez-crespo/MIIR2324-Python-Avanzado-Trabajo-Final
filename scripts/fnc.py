@@ -55,7 +55,7 @@ def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
 
 # TODO quitar la v de la función para la entrega final
 def ejecuta_experimentos_transfer_learning(
-    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v, mw
+    et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, mw
 ):
     """Ejecuta experimentos de Transfer Learning utilizando los parámetros proporcionados y almacena los resultados en un dataframe.
 
@@ -69,8 +69,6 @@ def ejecuta_experimentos_transfer_learning(
     :type target_entrenamiento: numpy.ndarray
     :param target_test: Objetivos de prueba.
     :type target_test: numpy.ndarray
-    # :param v: Lista de valores booleanos para seleccionar el método de ejecución.
-    # :type v: list
     :param mw: Valor para el número máximo de hilos de ejecución para multihilo_pool_executor.
     :type mw: int
     :return: Un diccionario de configuraciones, y tres dataframes con los resultados.
@@ -82,39 +80,25 @@ def ejecuta_experimentos_transfer_learning(
         "vgg": {"im_or": {}, "im_norm": {}, "im_preprocesadas": {}},
     }
 
-    # # Experimentación de Transfer Learning con los parámetros establecidos y almacenamiento de los resultados en el dataframe creado
-    # if configuracion["ejecucion"]["multihilo_clase_thread"]:
-    #     df_tl_or, configuraciones = multihilo_clase_thread(
-    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
-    #     )
-    # elif configuracion["ejecucion"]["multihilo_pool_executor"]:
-    #     df_tl_or, configuraciones = multihilo_pool_executor(
-    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
-    #     )
-    # elif configuracion["ejecucion"]["secuencial"]:
-    #     df_tl_or, configuraciones = secuencial(
-    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
-    #     )
-    # elif configuracion["ejecucion"]["multiproceso_pool_executor"]:
-    #     df_tl_or, configuraciones = multiproceso_pool_executor(
-    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
-    #     )
-    # elif configuracion["ejecucion"]["multiproceso_clase_process"]:
-    #     df_tl_or, configuraciones = multiproceso_clase_process(
-    #         et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
-    #     )
-
     # Experimentación de Transfer Learning con los parámetros establecidos y almacenamiento de los resultados en el dataframe creado
-    if v[0]:
+    if configuracion["ejecucion"]["multihilo_clase_thread"]:
         df_tl_or, configuraciones = multihilo_clase_thread(
             et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
         )
-    elif v[1]:
+    elif configuracion["ejecucion"]["multihilo_pool_executor"]:
         df_tl_or, configuraciones = multihilo_pool_executor(
             et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones, mw
         )
-    elif v[2]:
+    elif configuracion["ejecucion"]["secuencial"]:
         df_tl_or, configuraciones = secuencial(
+            et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+        )
+    elif configuracion["ejecucion"]["multiproceso_pool_executor"]:
+        df_tl_or, configuraciones = multiproceso_pool_executor(
+            et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
+        )
+    elif configuracion["ejecucion"]["multiproceso_clase_process"]:
+        df_tl_or, configuraciones = multiproceso_clase_process(
             et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, configuraciones
         )
 

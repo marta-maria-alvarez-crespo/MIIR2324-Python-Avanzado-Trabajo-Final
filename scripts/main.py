@@ -136,10 +136,11 @@ def main():
     de Transfer Learning, genera una gráfica comparativa, ejecuta los experimentos de Transfer Learning, selecciona la mejor
     red y configuración, realiza la experimentación de Fine Tunning y almacena los resultados en un dataframe.
     """
-    
+
     # Carga del dataset
     im_filtradas, et_filtradas = funciones_datos.cargar_dataset()
 
+    # Selección de una muestra de las imágenes y etiquetas filtradas
     im_filtradas = np.concatenate((im_filtradas[:150], im_filtradas[2000:2150], im_filtradas[-150:]))
     et_filtradas = np.concatenate((et_filtradas[:150], et_filtradas[2000:2150], et_filtradas[-150:]))
 
@@ -172,6 +173,7 @@ def main():
         pred_test_or=pred_test_or,
         target_entrenamiento=target_entrenamiento,
         target_test=target_test,
+        mw=4,
     )
 
     # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
