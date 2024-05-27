@@ -4,7 +4,6 @@
 # GitHub: www.github.com/marta-maria-alvarez-crespo/MIIR2324-Python-Avanzado-Trabajo-Final
 
 import os
-import json
 import cProfile
 import fnc
 import funciones_datos
@@ -21,7 +20,6 @@ def main():
     A continuación, ejecuta los experimentos de Transfer Learning configurados y compara los resultados para seleccionar la mejor red y configuración.
     Finalmente, realiza la experimentación de Fine Tunning con los parámetros óptimos y almacena los resultados en un dataframe.
     """
-    configuracion = json.load(open("scripts/configuracion.json", "r", encoding="UTF-8"))
 
     # Carga del dataset
     im_filtradas, et_filtradas = funciones_datos.cargar_dataset()
@@ -44,8 +42,7 @@ def main():
         pred_test_or=pred_test_or,
         target_entrenamiento=target_entrenamiento,
         target_test=target_test,
-        v=[0, 1, 0],
-        mw=4,
+        mw=4
     )
 
     # Compara los experimentos y devuelve la combinación de la mejor red y configuración según los resultados obtenidos
