@@ -53,7 +53,6 @@ def division_preparacion_datos_entrada(im_filtradas, et_filtradas):
     )
 
 
-# TODO quitar la v de la función para la entrega final
 def ejecuta_experimentos_transfer_learning(
     et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, mw
 ):

@@ -43,53 +43,27 @@ def medicion_de_tiempos(
     :return: Una tupla que contiene el tiempo y las etiquetas.
     :rtype: tuple
     """
-    v = 0
     tiempo = []
+    mw = 4
     max_workers = []
-    for v in [[0, 1, 0], [1, 0, 0], [0, 0, 1]]:
-        if v[1] == 1:
-            while min_w <= max_w:
-                tiempos = repeat(
-                    "fnc.ejecuta_experimentos_transfer_learning(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v, min_w)",
-                    repeat=repeticiones,
-                    number=1,
-                    globals={
-                        "et_filtradas": et_filtradas,
-                        "pred_entrenamiento_or": pred_entrenamiento_or,
-                        "pred_test_or": pred_test_or,
-                        "target_entrenamiento": target_entrenamiento,
-                        "target_test": target_test,
-                        "v": v,
-                        "min_w": min_w,
-                        "fnc": fnc,
-                    },
-                )
-                tiempo.extend(tiempos)
-                max_workers.extend([min_w] * len(tiempos))
-                min_w += 1
-        else:
-            tiempos = repeat(
-                "fnc.ejecuta_experimentos_transfer_learning(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, v, min_w)",
-                repeat=repeticiones,
-                number=1,
-                globals={
-                    "et_filtradas": et_filtradas,
-                    "pred_entrenamiento_or": pred_entrenamiento_or,
-                    "pred_test_or": pred_test_or,
-                    "target_entrenamiento": target_entrenamiento,
-                    "target_test": target_test,
-                    "v": v,
-                    "min_w": min_w,
-                    "fnc": fnc,
-                },
-            )
-            tiempo.extend(tiempos)
-
-    labels = (
-        [f"ThreadPoolExecutor (max workers={workers})" for workers in max_workers]
-        + ["Clase Thread"] * repeticiones
-        + ["Secuencial"] * repeticiones
+    tiempos = repeat(
+        "fnc.ejecuta_experimentos_transfer_learning(et_filtradas, pred_entrenamiento_or, pred_test_or, target_entrenamiento, target_test, mw)",
+        repeat=repeticiones,
+        number=1,
+        globals={
+            "et_filtradas": et_filtradas,
+            "pred_entrenamiento_or": pred_entrenamiento_or,
+            "pred_test_or": pred_test_or,
+            "target_entrenamiento": target_entrenamiento,
+            "target_test": target_test,
+            "mw": mw,
+            "fnc": fnc,
+        },
     )
+    tiempo.extend(tiempos)
+    max_workers.extend([mw] * len(tiempos))
+
+    labels = ["Tiempo de ejecución"]
     # Crea un DataFrame de pandas
     df = pd.DataFrame({"Prueba": labels, "Tiempo": tiempo})
 
