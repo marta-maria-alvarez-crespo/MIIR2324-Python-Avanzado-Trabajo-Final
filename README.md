@@ -8,7 +8,7 @@ Este estudio de medición de tiempos es útil para identificar posibles cuellos 
 ## Requisitos
 
 - Se recomienda la creación de un entorno virtual personalizado para cargar el fichero de requirements.txt
-- Es necesario descargar el dataset de ejemplo desde `https://astronn.readthedocs.io/en/latest/galaxy10.html`. Otros datasets de tipo .h5 son compatibles con esta implementación, pero se recomienda utilizar este.
+- Es necesario descargar el dataset de ejemplo desde [AstroNN](https://astronn.readthedocs.io/en/latest/galaxy10.html). Otros datasets de tipo .h5 son compatibles con esta implementación, pero se recomienda utilizar este.
 
 ## Instalación
 
