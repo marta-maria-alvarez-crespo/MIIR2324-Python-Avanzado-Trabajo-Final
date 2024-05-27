@@ -8,6 +8,7 @@ __pycache__/
 *.npy
 *.h5
 *.xlsx
+*.pstats
 
 # Carpetas generadas por el script
 metricas_evaluacion/
