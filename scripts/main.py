@@ -18,7 +18,7 @@ def medicion_de_tiempos(
     pred_test_or,
     target_entrenamiento,
     target_test,
-    repeticiones=10,
+    repeticiones=1,
 ):
     """Función que permite la ejecución con varios hilos o procesos (por implementar) y la obtención de un estudio estadístico sencillo
 
@@ -61,7 +61,9 @@ def medicion_de_tiempos(
     tiempo.extend(tiempos)
     max_workers.extend([mw] * len(tiempos))
 
-    labels = ["Tiempo de ejecución"]
+    
+    labels = [f"Ejecución {i}" for i in range(len(tiempos))]
+    
     # Crea un DataFrame de pandas
     df = pd.DataFrame({"Prueba": labels, "Tiempo": tiempo})
 
