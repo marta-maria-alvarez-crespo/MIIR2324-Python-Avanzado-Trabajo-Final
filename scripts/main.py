@@ -131,8 +131,6 @@ def main():
         pred_test_or,
         target_entrenamiento,
         target_test,
-        min_w=2,
-        max_w=16,
         repeticiones=10,
     )
 
