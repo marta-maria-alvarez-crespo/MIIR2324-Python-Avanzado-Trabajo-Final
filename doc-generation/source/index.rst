@@ -13,10 +13,4 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   deep_learning
-   preprocesado
-   main
-   preprocesado_paralelo
-   utilidades
-   funciones_datos
-   fnc
+   modules

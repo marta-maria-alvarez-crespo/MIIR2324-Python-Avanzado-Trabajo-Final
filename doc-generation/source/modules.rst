@@ -8,7 +8,6 @@ Scripts
    fnc
    funciones_datos
    main
-   mi_hilo
+   procesado_paralelo
    preprocesado
-   prueba
    utilidades
