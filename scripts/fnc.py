@@ -9,7 +9,7 @@ import json
 import deep_learning
 import funciones_datos
 import pandas as pd
-from scripts.procesado_paralelo import MiHilo, MiProceso
+from procesado_paralelo import MiHilo, MiProceso
 from multiprocess import Queue
 from tensorflow.keras import optimizers
 from pathos.multiprocessing import ProcessPool
