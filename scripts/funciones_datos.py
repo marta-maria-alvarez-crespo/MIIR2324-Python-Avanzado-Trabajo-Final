@@ -36,13 +36,6 @@ def cargar_dataset():
     imagenes_filtradas = imagenes[indices_clases_utilizadas]
     etiquetas_filtradas = etiquetas[indices_clases_utilizadas]
 
-    # # Codificación One Hot de las clases
-    # OHE = OneHotEncoder()
-    # etiquetas_filtradas = OHE.fit_transform(etiquetas_filtradas)
-    # # Codificación One Hot de las clases
-    # OHE = OneHotEncoder()
-    # etiquetas_filtradas = OHE.fit_transform(etiquetas_filtradas)
-
     target = []
     for etiqueta in etiquetas_filtradas:
         if etiqueta == 1:
