@@ -18,11 +18,9 @@ def medicion_de_tiempos(
     pred_test_or,
     target_entrenamiento,
     target_test,
-    min_w=2,
-    max_w=8,
     repeticiones=10,
 ):
-    """Función que permite la experimentación con varios hilos o procesos (por implementar) y la obtención de un estudio estadístico sencillo
+    """Función que permite la ejecución con varios hilos o procesos (por implementar) y la obtención de un estudio estadístico sencillo
 
     :param et_filtradas: Lista de etiquetas filtradas.
     :type et_filtradas: list
