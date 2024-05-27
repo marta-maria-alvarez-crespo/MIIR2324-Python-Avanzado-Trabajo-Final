@@ -1,6 +1,9 @@
-# Nombre del Proyecto
+# Entrenamiento y Validación de RN para la clasificación de Galaxias
+## Estudio de rendimiento y profiling con Timeit y cProfile
 
-Breve descripción del proyecto.
+En este proyecto, se incluye un estudio de medición de tiempos para evaluar el rendimiento del algoritmo de clasificación de galaxias implementado. El objetivo de este estudio es analizar el tiempo que tarda el algoritmo en procesar diferentes conjuntos de datos y comparar su eficiencia en diferentes configuraciones.
+
+Este estudio de medición de tiempos es útil para identificar posibles cuellos de botella en el algoritmo, optimizar su rendimiento y tomar decisiones informadas sobre la configuración más adecuada para diferentes escenarios de uso.
 
 ## Requisitos
 
