@@ -21,13 +21,3 @@ Este estudio de medición de tiempos es útil para identificar posibles cuellos 
 1. Configura el experimento acorde a tus necesidades modificando los valores del fichero [configuracion](./scripts/configuracion.json)
 2. Ejecuta el programa desde el [main](./scripts/main.py)
 3. En caso de querer realizar un estudio de profiling, ejecuta el fichero profiling.py, configurando previamente la ejecución deseada a través del fichero json.
-
-
-## Contribución
-
-Si deseas contribuir a este proyecto, sigue los siguientes pasos:
-
-1. Haz un fork del repositorio.
-2. Crea una rama nueva para tu contribución.
-3. Realiza los cambios necesarios.
-4. Envía un pull request.
