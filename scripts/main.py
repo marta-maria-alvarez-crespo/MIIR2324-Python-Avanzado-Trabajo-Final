@@ -140,8 +140,11 @@ def main():
     # Carga del dataset
     im_filtradas, et_filtradas = funciones_datos.cargar_dataset()
 
-    im_filtradas = np.concatenate((im_filtradas[:150], im_filtradas[2000:2150], im_filtradas[-150:]))
-    et_filtradas = np.concatenate((et_filtradas[:150], et_filtradas[2000:2150], et_filtradas[-150:]))
+    # im_filtradas = np.concatenate((im_filtradas[:150], im_filtradas[2000:2150], im_filtradas[-150:]))
+    # et_filtradas = np.concatenate((et_filtradas[:150], et_filtradas[2000:2150], et_filtradas[-150:]))
+    im_filtradas = np.concatenate((im_filtradas[:50], im_filtradas[-50:]))
+    et_filtradas = np.concatenate((et_filtradas[:50], et_filtradas[-50:]))
+    
 
     # División de los datos de entrada en conjuntos de entrenamiento y validación
     (
